@@ -9,6 +9,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+# The API requires write permission on the repository to submit coverage reports
+permissions:
+  contents: write
+
 jobs:
 
   build:
