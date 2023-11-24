@@ -12,7 +12,9 @@
         "port": 8080
       },
       "restartOn": {
-        "files": ["*"]
+        "files": ["*"],
+        "branch": true,
+        "resume": true
       }
     }
   }
