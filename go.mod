@@ -2,7 +2,7 @@ module participating-online/sublinks-federation
 
 go 1.21.4
 
-require github.com/gorilla/mux v1.8.0
+require github.com/gorilla/mux v1.8.1
 
 require (
 	github.com/sethvargo/go-retry v0.2.4 // indirect
