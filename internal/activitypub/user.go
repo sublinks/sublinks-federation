@@ -64,6 +64,6 @@ func ConvertUserToApub(u *lemmy.UserResponse) User {
 		u.PersonView.Person.Name,
 		u.PersonView.Person.MatrixUserId,
 		u.PersonView.Person.Bio,
-		"",
+		"", //TODO: Public key goes here
 	)
 }
