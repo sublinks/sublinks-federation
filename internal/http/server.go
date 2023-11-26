@@ -17,10 +17,6 @@ func RunServer() {
 	flag.Parse()
 
 	r := mux.NewRouter()
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Location", "/post/1")
-		w.WriteHeader(http.StatusFound) // 302
-	})
 	r.HandleFunc("/users/{user}", GetUserInfoHandler).Methods("GET")
 	r.HandleFunc("/users/{user}/inbox", GetInboxHandler).Methods("GET")
 	r.HandleFunc("/users/{user}/inbox", PostInboxHandler).Methods("POST")
