@@ -2,6 +2,7 @@ package activitypub
 
 import (
 	"fmt"
+	"participating-online/sublinks-federation/internal/lemmy"
 	"time"
 )
 
@@ -67,4 +68,16 @@ func NewPost(postUrl string, fromUser string, communityUrl string, postTitle str
 		Published: published,
 	}
 	return post
+}
+
+func ConvertPostToApub(p *lemmy.Response) Post {
+	return NewPost(
+		p.PostView.Post.ApId,
+		fmt.Sprintf("https://demo.sublinks.org/u/%s", p.PostView.Creator.Name),
+		p.CommunityView.Community.ActorId,
+		p.PostView.Post.Name,
+		p.PostView.Post.Body,
+		p.PostView.Post.Nsfw,
+		p.PostView.Post.Published,
+	)
 }

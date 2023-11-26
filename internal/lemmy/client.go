@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -26,6 +27,12 @@ func NewClient(url string, user string, password string) *Client {
 			Timeout: time.Minute,
 		},
 	}
+}
+
+func GetLemmyClient(ctx context.Context) *Client {
+	user, _ := os.LookupEnv("LEMMY_USER")
+	pass, _ := os.LookupEnv("LEMMY_PASSWORD")
+	return NewClient("https://demo.sublinks.org", user, pass)
 }
 
 func (c *Client) GetPost(ctx context.Context, id string) (*Response, error) {

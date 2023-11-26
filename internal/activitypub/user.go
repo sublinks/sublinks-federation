@@ -1,8 +1,10 @@
 package activitypub
 
 import (
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"database/sql"
 	"encoding/pem"
 	"fmt"
 	"log"
@@ -97,4 +99,49 @@ func NewUser(name string, privatekey *rsa.PrivateKey, publickey *rsa.PublicKey) 
 	user.Updated = time.Now()
 	user.Endpoints.SharedInbox = fmt.Sprintf("https://%s/inbox", Hostname)
 	return user
+}
+
+func (user *User) SaveUser(db *sql.DB, privateKey string) {
+	res, err := db.Exec(fmt.Sprintf("INSERT INTO users (name, public_key, private_key) VALUES ('%s', '%s', '%s', '%s');", user.Name, user.Publickey.Keyid, user.Publickey.PublicKeyPem, privateKey))
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Print(res)
+}
+
+func GetUser(db *sql.DB, name string) (*User, error) {
+	rows, err := db.Query(fmt.Sprintf("select * from users where name='%s';", name))
+	if err != nil {
+		return nil, err
+	}
+	var user User
+	if !rows.Next() {
+		privatekey, publickey := GenerateKeyPair()
+		user := NewUser(name, privatekey, publickey)
+		user.SaveUser(db, GetPrivateKeyString(privatekey))
+		return &user, nil
+	}
+	var id int
+	var public_key, private_key string
+	err = rows.Scan(&id, &name, &public_key, &private_key)
+	if err != nil {
+		fmt.Print(err)
+		privatekey, publickey := GenerateKeyPair()
+		user := NewUser(name, privatekey, publickey)
+		user.SaveUser(db, GetPrivateKeyString(privatekey))
+		return &user, nil
+	}
+	user = NewExistingUser(name, private_key, public_key)
+	return &user, nil
+}
+
+func GenerateKeyPair() (*rsa.PrivateKey, *rsa.PublicKey) {
+	// generate key
+	privatekey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		fmt.Printf("Cannot generate RSA key\n")
+		os.Exit(1)
+	}
+	publickey := &privatekey.PublicKey
+	return privatekey, publickey
 }
