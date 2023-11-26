@@ -6,9 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"participating-online/sublinks-federation/internal/activitypub"
-	"participating-online/sublinks-federation/internal/db"
 	"participating-online/sublinks-federation/internal/lemmy"
 
 	"github.com/gorilla/mux"
@@ -32,29 +30,19 @@ func GetPostHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	if vars["user"] != "lazyguru" {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprint(w, "User not found")
+	ctx := context.Background()
+	c := lemmy.GetLemmyClient(ctx)
+	log.Println(fmt.Sprintf("Looking up user %s", vars["user"]))
+	user, err := c.GetUser(ctx, vars["user"])
+	if err != nil {
+		log.Println("Error reading user", err)
 		return
 	}
 
-	dbUrl, _ := os.LookupEnv("DB_URL")
-	db, err := db.GetDb(dbUrl)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
-	}
-	defer db.Close()
-	user, err := activitypub.GetUser(db, vars["user"])
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
-	}
+	userLd := activitypub.ConvertUserToApub(user)
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("content-type", "application/activity+json")
-	content, _ := json.MarshalIndent(user, "", "  ")
+	content, _ := json.MarshalIndent(userLd, "", "  ")
 	w.Write(content)
 }
 
