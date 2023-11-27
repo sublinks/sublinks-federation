@@ -2,18 +2,9 @@ package activitypub
 
 import (
 	"fmt"
+	"participating-online/sublinks-federation/internal/lemmy"
 	"time"
 )
-
-type Source struct {
-	Content   string `json:"content"`
-	MediaType string `json:"mediaType"`
-}
-
-type Link struct {
-	Type string `json:"type"` //"Link" | "Image"
-	Href string `json:"href"` //"https://enterprise.lemmy.ml/pictrs/image/eOtYb9iEiB.png"
-}
 
 type Language struct {
 	Identifier string `json:"identifier"` // "fr",
@@ -67,4 +58,16 @@ func NewPost(postUrl string, fromUser string, communityUrl string, postTitle str
 		Published: published,
 	}
 	return post
+}
+
+func ConvertPostToApub(p *lemmy.PostResponse) Post {
+	return NewPost(
+		p.PostView.Post.ApId,
+		fmt.Sprintf("https://demo.sublinks.org/u/%s", p.PostView.Creator.Name),
+		p.CommunityView.Community.ActorId,
+		p.PostView.Post.Name,
+		p.PostView.Post.Body,
+		p.PostView.Post.Nsfw,
+		p.PostView.Post.Published,
+	)
 }

@@ -1,12 +1,9 @@
 package activitypub
 
 import (
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/pem"
 	"fmt"
-	"log"
 	"os"
+	"participating-online/sublinks-federation/internal/lemmy"
 	"time"
 )
 
@@ -25,76 +22,48 @@ type Endpoints struct {
 }
 
 type User struct {
-	Context           string    `json:"@context"`
+	Context           Context   `json:"@context"`
 	Id                string    `json:"id"`
 	PreferredUsername string    `json:"preferredUsername"`
 	Inbox             string    `json:"inbox"`
 	Outbox            string    `json:"outbox"`
 	Type              string    `json:"type"`
-	Name              string    `json:"name"`
+	Summary           string    `json:"summary"`
+	MatrixUserId      string    `json:"matrixUserId"`
+	Image             []Link    `json:"image"`
+	Icon              []Link    `json:"icon"`
+	Source            Source    `json:"source"`
 	Publickey         PublicKey `json:"publicKey"`
-	privatekey        string
 	Published         time.Time `json:"published"`
-	Updated           time.Time `json:"updated"`
 	Endpoints         Endpoints `json:"endpoints"`
 }
 
-func GetPrivateKeyString(privatekey *rsa.PrivateKey) string {
-	privateKeyBytes, err := x509.MarshalPKCS8PrivateKey(privatekey)
-	if err != nil {
-		log.Fatalf("error when dumping privatekey: %s \n", err)
-	}
-	return string(pem.EncodeToMemory(&pem.Block{
-		Type:  "PRIVATE KEY",
-		Bytes: privateKeyBytes,
-	}))
-}
-
-func NewExistingUser(name string, privatekey string, publickey string) User {
+func NewUser(name string, matrixUserId string, bio string, publickey string) User {
 	user := User{}
-	user.Context = "https://www.w3.org/ns/activitystreams"
-	user.PreferredUsername = name
-	user.Id = fmt.Sprintf("https://%s/users/%s", Hostname, name)
-	user.Inbox = fmt.Sprintf("https://%s/users/%s/inbox", Hostname, name)
-	user.Outbox = fmt.Sprintf("https://%s/users/%s/outbox", Hostname, name)
-	user.Type = "Person"
-	user.Name = name
-	user.privatekey = privatekey
-	pubKeyId := fmt.Sprintf("https://%s/users/%s#main-key", Hostname, name)
-	owner := fmt.Sprintf("https://%s/users/%s", Hostname, name)
-	user.Publickey = PublicKey{Keyid: pubKeyId, PublicKeyPem: publickey, Owner: owner}
-	user.Published = time.Now()
-	user.Updated = time.Now()
-	user.Endpoints.SharedInbox = fmt.Sprintf("https://%s/inbox", Hostname)
-	return user
-}
-
-func NewUser(name string, privatekey *rsa.PrivateKey, publickey *rsa.PublicKey) User {
-	user := User{}
-	user.Context = "https://www.w3.org/ns/activitystreams"
+	user.Context = GetContext()
 	user.Id = fmt.Sprintf("https://%s/users/%s", Hostname, name)
 	user.PreferredUsername = name
 	user.Inbox = fmt.Sprintf("https://%s/users/%s/inbox", Hostname, name)
 	user.Outbox = fmt.Sprintf("https://%s/users/%s/outbox", Hostname, name)
 	user.Type = "Person"
-	user.Name = name
-	user.privatekey = GetPrivateKeyString(privatekey)
-	publicKeyBytes, err := x509.MarshalPKIXPublicKey(publickey)
-	if err != nil {
-		fmt.Printf("error when dumping publickey: %s \n", err)
-		return User{}
-	}
+	user.Summary = bio
+	user.MatrixUserId = matrixUserId
 	owner := fmt.Sprintf("https://%s/users/%s", Hostname, name)
 	user.Publickey = PublicKey{
-		Keyid: fmt.Sprintf("https://%s/users/%s#main-key", Hostname, name),
-		Owner: owner,
-		PublicKeyPem: string(pem.EncodeToMemory(&pem.Block{
-			Type:  "PUBLIC KEY",
-			Bytes: publicKeyBytes,
-		})),
+		Keyid:        fmt.Sprintf("https://%s/users/%s#main-key", Hostname, name),
+		Owner:        owner,
+		PublicKeyPem: publickey,
 	}
 	user.Published = time.Now()
-	user.Updated = time.Now()
 	user.Endpoints.SharedInbox = fmt.Sprintf("https://%s/inbox", Hostname)
 	return user
+}
+
+func ConvertUserToApub(u *lemmy.UserResponse) User {
+	return NewUser(
+		u.PersonView.Person.Name,
+		u.PersonView.Person.MatrixUserId,
+		u.PersonView.Person.Bio,
+		"", //TODO: Public key goes here
+	)
 }
