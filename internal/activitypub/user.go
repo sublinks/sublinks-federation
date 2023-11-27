@@ -2,14 +2,9 @@ package activitypub
 
 import (
 	"fmt"
-	"os"
 	"participating-online/sublinks-federation/internal/lemmy"
 	"time"
 )
-
-var host, _ = os.LookupEnv("HOSTNAME")
-var domain, _ = os.LookupEnv("CSB_BASE_PREVIEW_HOST")
-var Hostname string = fmt.Sprintf("%s-8080.%s", host, domain)
 
 type PublicKey struct {
 	Keyid        string `json:"id"`
@@ -38,7 +33,7 @@ type User struct {
 	Endpoints         Endpoints `json:"endpoints"`
 }
 
-func NewUser(name string, matrixUserId string, bio string, publickey string) User {
+func NewUser(name string, matrixUserId string, bio string, publickey string, Hostname string) User {
 	user := User{}
 	user.Context = GetContext()
 	user.Id = fmt.Sprintf("https://%s/users/%s", Hostname, name)
@@ -59,11 +54,12 @@ func NewUser(name string, matrixUserId string, bio string, publickey string) Use
 	return user
 }
 
-func ConvertUserToApub(u *lemmy.UserResponse) User {
+func ConvertUserToApub(u *lemmy.UserResponse, host string) User {
 	return NewUser(
 		u.PersonView.Person.Name,
 		u.PersonView.Person.MatrixUserId,
 		u.PersonView.Person.Bio,
 		"", //TODO: Public key goes here
+		host,
 	)
 }

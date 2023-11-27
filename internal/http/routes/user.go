@@ -27,7 +27,7 @@ func getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userLd := activitypub.ConvertUserToApub(user)
+	userLd := activitypub.ConvertUserToApub(user, r.Host)
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("content-type", "application/activity+json")
 	content, _ := json.MarshalIndent(userLd, "", "  ")
