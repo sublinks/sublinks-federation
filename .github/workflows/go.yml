@@ -21,8 +21,13 @@ env:
 
 jobs:
 
-  build:
+  checks:
     runs-on: ubuntu-latest
+    # The API requires write permission on the repository to submit coverage reports
+    permissions:
+      contents: write
+      checks: write
+      pull-requests: write
     steps:
     - uses: actions/checkout@v4
 
@@ -37,19 +42,11 @@ jobs:
     - name: Lint
       run: gofmt -l -e ./
 
-    - name: Build
-      run: go build -v cmd/federation.go
-
     - name: Test
       run: go test -v ./...
 
     - name: Coverage
       uses: gwatts/go-coverage-action@v1.3.0
-      # The API requires write permission on the repository to submit coverage reports
-      permissions:
-        contents: write
-        checks: write
-        pull-requests: write
       with:
         # Fail the build if the coverage drops below supplied percentage
         coverage-threshold: 0 # Change this as coverage improves
@@ -59,6 +56,25 @@ jobs:
         add-comment: true
         # One or more regular expressions matching filenames to exclude from coverage statistics (e.g. for generated Go files)
         #ignore-pattern:
+
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21.4'
+
+    - name: Build
+      run: go build -v cmd/federation.go
 
     # Set up BuildKit Docker container builder to be able to build
     # multi-platform images and export cache
@@ -71,12 +87,6 @@ jobs:
     - name: Log into registry ${{ env.REGISTRY }}
       if: github.event_name != 'pull_request'
       uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
-      permissions:
-        contents: read
-        packages: write
-        # This is used to complete the identity challenge
-        # with sigstore/fulcio when running outside of PRs.
-        id-token: write
       with:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
