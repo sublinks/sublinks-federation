@@ -24,7 +24,7 @@ func getActivityHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var content []byte
 	switch vars["action"] {
-	case "post":
+	case "create":
 		obj, err := GetPostActivityObject(vars["id"])
 		if err != nil {
 			log.Println("Error reading object", err)
