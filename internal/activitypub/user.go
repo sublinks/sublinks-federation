@@ -17,7 +17,7 @@ type Endpoints struct {
 }
 
 type User struct {
-	Context           Context   `json:"@context"`
+	Context           *Context  `json:"@context"`
 	Id                string    `json:"id"`
 	PreferredUsername string    `json:"preferredUsername"`
 	Inbox             string    `json:"inbox"`

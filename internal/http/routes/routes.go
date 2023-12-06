@@ -7,5 +7,6 @@ func SetupRoutes() *mux.Router {
 	SetupUserRoutes(r)
 	SetupPostRoutes(r)
 	SetupApubRoutes(r)
+	SetupActivityRoutes(r)
 	return r
 }
