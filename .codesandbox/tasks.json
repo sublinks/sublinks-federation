@@ -16,6 +16,16 @@
         "branch": true,
         "resume": true
       }
+    },
+    "go test": {
+      "name": "Test",
+      "command": "go test -v ./...",
+      "runAtStart": true,
+      "restartOn": {
+        "files": ["*"],
+        "branch": true,
+        "resume": true
+      }
     }
   }
 }
