@@ -13,7 +13,7 @@ import (
 )
 
 func SetupUserRoutes(r *mux.Router) {
-	r.HandleFunc("/users/{user}", getUserInfoHandler).Methods("GET")
+	r.HandleFunc("/u/{user}", getUserInfoHandler).Methods("GET")
 }
 
 func getUserInfoHandler(w http.ResponseWriter, r *http.Request) {

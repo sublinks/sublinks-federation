@@ -33,19 +33,25 @@ type User struct {
 	Endpoints         Endpoints `json:"endpoints"`
 }
 
-func NewUser(name string, matrixUserId string, bio string, publickey string, Hostname string) User {
+func NewUser(
+	name string,
+	matrixUserId string,
+	bio string,
+	publickey string,
+	Hostname string,
+) User {
 	user := User{}
 	user.Context = GetContext()
-	user.Id = fmt.Sprintf("https://%s/users/%s", Hostname, name)
+	user.Id = fmt.Sprintf("https://%s/u/%s", Hostname, name)
 	user.PreferredUsername = name
-	user.Inbox = fmt.Sprintf("https://%s/users/%s/inbox", Hostname, name)
-	user.Outbox = fmt.Sprintf("https://%s/users/%s/outbox", Hostname, name)
+	user.Inbox = fmt.Sprintf("https://%s/u/%s/inbox", Hostname, name)
+	user.Outbox = fmt.Sprintf("https://%s/u/%s/outbox", Hostname, name)
 	user.Type = "Person"
 	user.Summary = bio
 	user.MatrixUserId = matrixUserId
-	owner := fmt.Sprintf("https://%s/users/%s", Hostname, name)
+	owner := fmt.Sprintf("https://%s/u/%s", Hostname, name)
 	user.Publickey = PublicKey{
-		Keyid:        fmt.Sprintf("https://%s/users/%s#main-key", Hostname, name),
+		Keyid:        fmt.Sprintf("https://%s/u/%s#main-key", Hostname, name),
 		Owner:        owner,
 		PublicKeyPem: publickey,
 	}
