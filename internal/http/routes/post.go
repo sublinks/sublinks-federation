@@ -25,6 +25,7 @@ func getPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	postLd := activitypub.ConvertPostToApub(post)
+	postLd.Context = activitypub.GetContext()
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("content-type", "application/activity+json")
 	content, _ := json.MarshalIndent(postLd, "", "  ")

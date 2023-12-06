@@ -26,8 +26,8 @@ type moderator struct {
 	Id   string `json:"@id"`
 }
 
-func GetContext() Context {
-	return Context{
+func GetContext() *Context {
+	return &Context{
 		"https://www.w3.org/ns/activitystreams",
 		"https://w3id.org/security/v1",
 		lemmyContextData{

@@ -12,28 +12,27 @@ type Language struct {
 }
 
 type Post struct {
-	Context         Context   `json:"@context"`
+	Context         *Context  `json:"@context,omitempty"`
 	Id              string    `json:"id"`
 	Type            string    `json:"type"`
 	AttributedTo    string    `json:"attributedTo"`
 	To              []string  `json:"to"`
-	Cc              []string  `json:"cc"`
+	Cc              []string  `json:"cc,omitempty"`
 	Audience        string    `json:"audience"`
 	Name            string    `json:"name"`
 	Content         string    `json:"content"`
 	MediaType       string    `json:"mediaType"`
 	Source          Source    `json:"source"`
-	Attachment      []Link    `json:"attachment"`
-	Image           []Link    `json:"image"`
+	Attachment      []Link    `json:"attachment,omitempty"`
+	Image           []Link    `json:"image,omitempty"`
 	Sensitive       bool      `json:"sensitive"`
 	CommentsEnabled bool      `json:"commentsEnabled"`
 	Language        Language  `json:"language"`
 	Published       time.Time `json:"published"`
 }
 
-func NewPost(postUrl string, fromUser string, communityUrl string, postTitle string, postBody string, nsfw bool, published time.Time) Post {
-	post := Post{
-		Context:      GetContext(),
+func NewPost(postUrl string, fromUser string, communityUrl string, postTitle string, postBody string, nsfw bool, published time.Time) *Post {
+	return &Post{
 		Id:           postUrl,
 		Type:         "Page",
 		AttributedTo: fromUser,
@@ -57,10 +56,9 @@ func NewPost(postUrl string, fromUser string, communityUrl string, postTitle str
 		},
 		Published: published,
 	}
-	return post
 }
 
-func ConvertPostToApub(p *lemmy.PostResponse) Post {
+func ConvertPostToApub(p *lemmy.PostResponse) *Post {
 	return NewPost(
 		p.PostView.Post.ApId,
 		fmt.Sprintf("https://demo.sublinks.org/u/%s", p.PostView.Creator.Name),
