@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"sublinks/federation/internal/http/routes"
-	"sublinks/federation/internal/log"
+	"sublinks/sublinks-federation/internal/http/routes"
+	"sublinks/sublinks-federation/internal/log"
 	"time"
 )
 

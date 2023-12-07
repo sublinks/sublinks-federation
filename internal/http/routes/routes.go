@@ -3,7 +3,7 @@ package routes
 import (
 	"encoding/json"
 	"net/http"
-	"sublinks/federation/internal/log"
+	"sublinks/sublinks-federation/internal/log"
 
 	"github.com/gorilla/mux"
 )

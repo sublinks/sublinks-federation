@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"sublinks/federation/internal/activitypub"
-	"sublinks/federation/internal/lemmy"
-	"sublinks/federation/internal/log"
+	"sublinks/sublinks-federation/internal/activitypub"
+	"sublinks/sublinks-federation/internal/lemmy"
+	"sublinks/sublinks-federation/internal/log"
 
 	"github.com/gorilla/mux"
 )

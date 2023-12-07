@@ -2,7 +2,7 @@ package activitypub
 
 import (
 	"fmt"
-	"sublinks/federation/internal/lemmy"
+	"sublinks/sublinks-federation/internal/lemmy"
 	"time"
 )
 
