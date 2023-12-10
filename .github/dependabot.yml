@@ -18,5 +18,23 @@ updates:
   # Maintain dependencies for Docker
   - package-ecosystem: "docker"
     directory: "/"
+    groups:
+       docker:
+          # Define patterns to include dependencies in the group (based on
+          # dependency name)
+          patterns:
+            - "*"       # A wildcard that matches all dependencies in the package
+                        # ecosystem. Note: using "*" may open a large pull request
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/.devcontainer/"
+    groups:
+       docker:
+          # Define patterns to include dependencies in the group (based on
+          # dependency name)
+          patterns:
+            - "*"       # A wildcard that matches all dependencies in the package
+                        # ecosystem. Note: using "*" may open a large pull request
     schedule:
       interval: "weekly"
