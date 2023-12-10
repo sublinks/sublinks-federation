@@ -32,9 +32,9 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
-        go-version: '1.21.4'
+        go-version: '1.21.5'
 
     - id: govulncheck
       uses: golang/govulncheck-action@v1
@@ -69,9 +69,9 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
-        go-version: '1.21.4'
+        go-version: '1.21.5'
 
     - name: Build
       run: go build -v cmd/federation.go
