@@ -3,10 +3,10 @@ package routes
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"sublinks/federation/internal/activitypub"
 	"sublinks/federation/internal/lemmy"
+	"sublinks/federation/internal/logging/logger"
 
 	"github.com/gorilla/mux"
 )
@@ -21,7 +21,7 @@ func getPostHandler(w http.ResponseWriter, r *http.Request) {
 	c := lemmy.GetLemmyClient(ctx)
 	post, err := c.GetPost(ctx, vars["postId"])
 	if err != nil {
-		log.Println("Error reading post", err)
+		logger.GetLogger().Println("Error reading post", err)
 		return
 	}
 	postLd := activitypub.ConvertPostToApub(post)
