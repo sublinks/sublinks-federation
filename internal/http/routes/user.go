@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"participating-online/sublinks-federation/internal/activitypub"
-	"participating-online/sublinks-federation/internal/lemmy"
+	"sublinks/federation/internal/activitypub"
+	"sublinks/federation/internal/lemmy"
 
 	"github.com/gorilla/mux"
 )

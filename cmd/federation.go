@@ -2,7 +2,7 @@ package main
 
 import (
 	"os"
-	"participating-online/sublinks-federation/internal/http"
+	"sublinks/federation/internal/http"
 )
 
 func main() {

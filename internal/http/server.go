@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"participating-online/sublinks-federation/internal/http/routes"
+	"sublinks/federation/internal/http/routes"
 	"time"
 )
 

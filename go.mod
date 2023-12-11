@@ -1,4 +1,4 @@
-module participating-online/sublinks-federation
+module sublinks/federation
 
 go 1.21.5
 
