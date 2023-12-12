@@ -42,6 +42,8 @@ func Request(msg string, r *http.Request) {
 			Error("Error parsing request body into json", err)
 			body = nil
 		}
+	} else {
+		body = rawbody
 	}
 	log.Debug().
 		Str("method", r.Method).
