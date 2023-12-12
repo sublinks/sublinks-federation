@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sublinks/federation/internal/activitypub"
 	"sublinks/federation/internal/lemmy"
-	"sublinks/federation/internal/logging"
+	"sublinks/federation/internal/log"
 
 	"fmt"
 
@@ -27,7 +27,7 @@ func getActivityHandler(w http.ResponseWriter, r *http.Request) {
 	case "create":
 		obj, err := GetPostActivityObject(vars["id"])
 		if err != nil {
-			logging.Error("Error reading object", err)
+			log.Error("Error reading object", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -59,7 +59,7 @@ func GetPostActivityObject(id string) (*activitypub.Post, error) {
 	c := lemmy.GetLemmyClient(ctx)
 	post, err := c.GetPost(ctx, id)
 	if err != nil {
-		logging.Error("Error reading post", err)
+		log.Error("Error reading post", err)
 		return nil, err
 	}
 	return activitypub.ConvertPostToApub(post), nil

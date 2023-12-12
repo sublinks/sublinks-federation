@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"sublinks/federation/internal/http/routes"
-	"sublinks/federation/internal/logging"
+	"sublinks/federation/internal/log"
 	"time"
 )
 
@@ -29,9 +29,9 @@ func RunServer() {
 
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
-		logging.Info("Starting server")
+		log.Info("Starting server")
 		if err := srv.ListenAndServe(); err != nil {
-			logging.Error("Error starting server", err)
+			log.Error("Error starting server", err)
 		}
 	}()
 
@@ -52,5 +52,5 @@ func RunServer() {
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
 	// <-ctx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.
-	logging.Info("shutting down")
+	log.Info("shutting down")
 }

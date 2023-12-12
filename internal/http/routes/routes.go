@@ -3,7 +3,7 @@ package routes
 import (
 	"encoding/json"
 	"net/http"
-	"sublinks/federation/internal/logging"
+	"sublinks/federation/internal/log"
 
 	"github.com/gorilla/mux"
 )
@@ -16,13 +16,13 @@ func SetupRoutes() *mux.Router {
 	SetupActivityRoutes(r)
 	r.NotFoundHandler = http.HandlerFunc(notFound)
 	r.MethodNotAllowedHandler = http.HandlerFunc(notAllowedMethod)
-	r.Use(loggingMiddleware)
+	r.Use(logMiddleware)
 	return r
 }
 
-func loggingMiddleware(next http.Handler) http.Handler {
+func logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logging.Request("", r)
+		log.Request("", r)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -32,7 +32,7 @@ type RequestError struct {
 }
 
 func notFound(w http.ResponseWriter, r *http.Request) {
-	logging.Request("404 Not Found", r)
+	log.Request("404 Not Found", r)
 	w.WriteHeader(http.StatusNotFound)
 	w.Header().Add("content-type", "application/activity+json")
 	content, _ := json.Marshal(RequestError{Msg: "not found"})
@@ -40,7 +40,7 @@ func notFound(w http.ResponseWriter, r *http.Request) {
 }
 
 func notAllowedMethod(w http.ResponseWriter, r *http.Request) {
-	logging.Request("405 Method Not Allowed", r)
+	log.Request("405 Method Not Allowed", r)
 	w.WriteHeader(http.StatusNotFound)
 	w.Header().Add("content-type", "application/activity+json")
 	content, _ := json.Marshal(RequestError{Msg: "method not allowed"})

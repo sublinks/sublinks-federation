@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sublinks/federation/internal/activitypub"
 	"sublinks/federation/internal/lemmy"
-	"sublinks/federation/internal/logging"
+	"sublinks/federation/internal/log"
 
 	"github.com/gorilla/mux"
 )
@@ -21,7 +21,7 @@ func getPostHandler(w http.ResponseWriter, r *http.Request) {
 	c := lemmy.GetLemmyClient(ctx)
 	post, err := c.GetPost(ctx, vars["postId"])
 	if err != nil {
-		logging.Error("Error reading post", err)
+		log.Error("Error reading post", err)
 		return
 	}
 	postLd := activitypub.ConvertPostToApub(post)
