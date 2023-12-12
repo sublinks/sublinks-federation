@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"sublinks/federation/internal/activitypub"
 	"sublinks/federation/internal/lemmy"
-	"sublinks/federation/internal/logging/logger"
+	"sublinks/federation/internal/logging"
 
 	"github.com/gorilla/mux"
 )
@@ -20,10 +20,10 @@ func getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ctx := context.Background()
 	c := lemmy.GetLemmyClient(ctx)
-	logger.GetLogger().Println(fmt.Sprintf("Looking up user %s", vars["user"]))
+	logging.Info(fmt.Sprintf("Looking up user %s", vars["user"]))
 	user, err := c.GetUser(ctx, vars["user"])
 	if err != nil {
-		logger.GetLogger().Println("Error reading user", err)
+		logging.Error("Error reading user", err)
 		return
 	}
 
