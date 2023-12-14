@@ -1,3 +1,6 @@
+> [!NOTE]
+> See issue #21. All federation support will be handled in the main repo as opposed to being done in a separate service
+
 # Sublinks Federation
 
 Federation service for Sublinks
