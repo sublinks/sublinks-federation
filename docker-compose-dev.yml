@@ -2,6 +2,7 @@ version: "3.7"
 
 volumes:
   db:
+  queue_data:
 
 services:
   db:
@@ -16,3 +17,13 @@ services:
     restart: always
     ports:
       - "3306:3306"
+
+  queue:
+    image: rabbitmq:3-management
+    restart: always
+    volumes:
+      - queue_data:/var/lib/rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
