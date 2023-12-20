@@ -6,9 +6,9 @@ import (
 	"sublinks/sublinks-federation/internal/db"
 	"sublinks/sublinks-federation/internal/http"
 	"sublinks/sublinks-federation/internal/log"
+	"sublinks/sublinks-federation/internal/queue"
 
 	"github.com/joho/godotenv"
-	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func main() {
@@ -23,31 +23,27 @@ func main() {
 	}
 	defer conn.Close()
 	db.RunMigrations(conn)
-	amqpServerURL := os.Getenv("AMQP_SERVER_URL")
-	// Create a new RabbitMQ connection.
-	connectRabbitMQ, err := amqp.Dial(amqpServerURL)
+
+	mqConnection, err := queue.Connect()
 	if err != nil {
-		panic(err)
+		log.Fatal("failed connecting to queue service", err)
 	}
-	defer connectRabbitMQ.Close()
-	channelRabbitMQ, err := connectRabbitMQ.Channel()
+	defer mqConnection.Close()
+	producer, err := queue.CreateProducer(mqConnection, "backend")
 	if err != nil {
-		panic(err)
+		log.Fatal("failed creating producer", err)
 	}
-	defer channelRabbitMQ.Close()
-	// With the instance and declare Queues that we can
-	// publish and subscribe to.
-	_, err = channelRabbitMQ.QueueDeclare(
-		"QueueService1", // queue name
-		true,            // durable
-		false,           // auto delete
-		false,           // exclusive
-		false,           // no wait
-		nil,             // arguments
-	)
+	defer producer.Close()
+	messages, err := queue.CreateConsumer(mqConnection, "federation")
 	if err != nil {
-		panic(err)
+		log.Fatal("failed creating consumer", err)
 	}
+	go func() {
+		for message := range messages {
+			log.Debug(fmt.Sprintf(" > Received message: %s\n", message.Body))
+		}
+	}()
+
 	http.RunServer()
 	os.Exit(0)
 }

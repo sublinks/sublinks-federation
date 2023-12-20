@@ -1,0 +1,30 @@
+package queue
+
+import (
+	"context"
+
+	amqp "github.com/rabbitmq/amqp091-go"
+)
+
+func CreateProducer(q *amqp.Connection, queueName string) (*amqp.Channel, error) {
+	channelRabbitMQ, err := q.Channel()
+	if err != nil {
+		return nil, err
+	}
+	CreateQueue(channelRabbitMQ, queueName)
+	return channelRabbitMQ, nil
+}
+
+func PublishMessage(q *amqp.Channel, message string) {
+	q.PublishWithContext(
+		context.TODO(),
+		"backend", // exchange
+		"",        // routing key
+		false,     // mandatory
+		false,     // immediate
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte(message),
+		},
+	)
+}
