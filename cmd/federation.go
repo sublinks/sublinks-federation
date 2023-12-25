@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"sublinks/sublinks-federation/internal/db"
 	"sublinks/sublinks-federation/internal/http"
@@ -13,7 +14,7 @@ func main() {
 	// Load connection string from .env file
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("failed to load env", err)
+		log.Warn(fmt.Sprintf("failed to load env, %v", err))
 	}
 	conn, err := db.Connect()
 	if err != nil {
