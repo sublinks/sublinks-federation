@@ -4,9 +4,13 @@
 
   // These tasks can be run from CodeSandbox. Running one will open a log in the app.
   "tasks": {
+    "term": {
+      "name": "Term",
+      "command": "bash"
+    },
     "go run": {
       "name": "Run",
-      "command": "go run ./cmd/",
+      "command": "cd /project/sublinks-federation && go run ./cmd/",
       "runAtStart": true,
       "preview": {
         "port": 8080
@@ -19,7 +23,7 @@
     },
     "go test": {
       "name": "Test",
-      "command": "go test -v ./...",
+      "command": "cd /project/sublinks-federation && go test -v ./...",
       "runAtStart": true,
       "restartOn": {
         "files": ["*"],

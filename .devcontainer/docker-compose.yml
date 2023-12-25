@@ -1,0 +1,38 @@
+version: "3.7"
+
+volumes:
+  db:
+  queue_data:
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sleep infinity
+    depends_on:
+      - db
+      - queue
+
+  db:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=federation
+      - MYSQL_USER=federation
+      - MYSQL_PASSWORD=federation
+    volumes:
+      - db:/var/lib/mysql
+    restart: always
+    ports:
+      - "3306:3306"
+
+  queue:
+    image: rabbitmq:3-management
+    restart: always
+    volumes:
+      - queue_data:/var/lib/rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
