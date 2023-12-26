@@ -5,6 +5,15 @@ volumes:
   queue_data:
 
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sleep infinity
+    depends_on:
+      - db
+      - queue
+
   db:
     image: mysql:latest
     environment:
