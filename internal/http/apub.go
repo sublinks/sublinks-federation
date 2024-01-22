@@ -1,16 +1,14 @@
-package routes
+package http
 
 import (
 	"net/http"
-
-	"github.com/gorilla/mux"
 )
 
-func SetupApubRoutes(r *mux.Router) {
-	r.HandleFunc("/users/{user}/inbox", getInboxHandler).Methods("GET")
-	r.HandleFunc("/users/{user}/inbox", postInboxHandler).Methods("POST")
-	r.HandleFunc("/users/{user}/outbox", getOutboxHandler).Methods("GET")
-	r.HandleFunc("/users/{user}/outbox", postOutboxHandler).Methods("POST")
+func (s Server) SetupApubRoutes() {
+	s.HandleFunc("/users/{user}/inbox", getInboxHandler).Methods("GET")
+	s.HandleFunc("/users/{user}/inbox", postInboxHandler).Methods("POST")
+	s.HandleFunc("/users/{user}/outbox", getOutboxHandler).Methods("GET")
+	s.HandleFunc("/users/{user}/outbox", postOutboxHandler).Methods("POST")
 }
 
 func getInboxHandler(w http.ResponseWriter, r *http.Request) {

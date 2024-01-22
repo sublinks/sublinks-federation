@@ -1,27 +1,25 @@
-package routes
+package http
 
 import (
 	"context"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"net/http"
 	"sublinks/sublinks-federation/internal/activitypub"
 	"sublinks/sublinks-federation/internal/lemmy"
-	"sublinks/sublinks-federation/internal/log"
-
-	"github.com/gorilla/mux"
 )
 
-func SetupPostRoutes(r *mux.Router) {
-	r.HandleFunc("/post/{postId}", getPostHandler).Methods("GET")
+func (s Server) SetupPostRoutes() {
+	s.HandleFunc("/post/{postId}", s.getPostHandler).Methods("GET")
 }
 
-func getPostHandler(w http.ResponseWriter, r *http.Request) {
+func (s Server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ctx := context.Background()
 	c := lemmy.GetLemmyClient(ctx)
 	post, err := c.GetPost(ctx, vars["postId"])
 	if err != nil {
-		log.Error("Error reading post", err)
+		s.Error("Error reading post", err)
 		return
 	}
 	postLd := activitypub.ConvertPostToApub(post)

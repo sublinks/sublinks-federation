@@ -1,29 +1,27 @@
-package routes
+package http
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 	"sublinks/sublinks-federation/internal/activitypub"
 	"sublinks/sublinks-federation/internal/lemmy"
-	"sublinks/sublinks-federation/internal/log"
-
-	"github.com/gorilla/mux"
 )
 
-func SetupUserRoutes(r *mux.Router) {
-	r.HandleFunc("/u/{user}", getUserInfoHandler).Methods("GET")
+func (s Server) SetupUserRoutes() {
+	s.HandleFunc("/u/{user}", s.getUserInfoHandler).Methods("GET")
 }
 
-func getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
+func (s Server) getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ctx := context.Background()
 	c := lemmy.GetLemmyClient(ctx)
-	log.Info(fmt.Sprintf("Looking up user %s", vars["user"]))
+	s.Info(fmt.Sprintf("Looking up user %s", vars["user"]))
 	user, err := c.GetUser(ctx, vars["user"])
 	if err != nil {
-		log.Error("Error reading user", err)
+		s.Error("Error reading user", err)
 		return
 	}
 

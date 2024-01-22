@@ -11,17 +11,24 @@ import (
 )
 
 func main() {
+	// bootstrap logger
+	logger := log.NewLogger()
+
 	// Load connection string from .env file
 	err := godotenv.Load()
 	if err != nil {
-		log.Warn(fmt.Sprintf("failed to load env, %v", err))
+		logger.Warn(fmt.Sprintf("failed to load env, %v", err))
 	}
+
 	conn, err := db.Connect()
 	if err != nil {
-		log.Fatal("failed connecting to db", err)
+		logger.Fatal("failed connecting to db", err)
 	}
-	defer conn.Close()
 	db.RunMigrations(conn)
-	http.RunServer()
+
+	defer conn.Close()
+	s := http.NewServer(logger)
+	s.RunServer()
+
 	os.Exit(0)
 }

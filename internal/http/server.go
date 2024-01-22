@@ -3,20 +3,40 @@ package http
 import (
 	"context"
 	"flag"
+	"github.com/gorilla/mux"
 	"net/http"
 	"os"
 	"os/signal"
-	"sublinks/sublinks-federation/internal/http/routes"
 	"sublinks/sublinks-federation/internal/log"
 	"time"
 )
 
-func RunServer() {
+type Server struct {
+	*mux.Router
+	log.Logger
+}
+
+func NewServer(logger log.Logger) *Server {
+	r := mux.NewRouter()
+
+	return &Server{
+		Router: r,
+		Logger: logger,
+	}
+}
+
+func (s Server) RunServer() {
 	var wait time.Duration
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
-	r := routes.SetupRoutes()
+	s.SetupUserRoutes()
+	s.SetupPostRoutes()
+	s.SetupApubRoutes()
+	s.SetupActivityRoutes()
+	s.NotFoundHandler = http.HandlerFunc(s.notFound)
+	s.MethodNotAllowedHandler = http.HandlerFunc(s.notAllowedMethod)
+	s.Use(s.logMiddleware)
 
 	srv := &http.Server{
 		Addr: "0.0.0.0:8080",
@@ -24,14 +44,15 @@ func RunServer() {
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
-		Handler:      r, // Pass our instance of gorilla/mux in.
+		// pass embed of Server for *mux
+		Handler: s,
 	}
 
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
-		log.Info("Starting server")
+		s.Info("Starting server")
 		if err := srv.ListenAndServe(); err != nil {
-			log.Error("Error starting server", err)
+			s.Error("Error starting server", err)
 		}
 	}()
 
@@ -52,5 +73,5 @@ func RunServer() {
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
 	// <-ctx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.
-	log.Info("shutting down")
+	s.Info("shutting down")
 }
