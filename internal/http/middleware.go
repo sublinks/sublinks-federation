@@ -5,15 +5,15 @@ import (
 	"net/http"
 )
 
+type RequestError struct {
+	Msg string `json:"message"`
+}
+
 func (s Server) logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		s.Logger.Request("", r)
 		next.ServeHTTP(w, r)
 	})
-}
-
-type RequestError struct {
-	Msg string `json:"message"`
 }
 
 func (s Server) notFound(w http.ResponseWriter, r *http.Request) {
