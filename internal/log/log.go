@@ -2,7 +2,6 @@ package log
 
 import (
 	"encoding/json"
-	"github.com/rs/zerolog"
 	"io"
 	"net/http"
 
@@ -18,9 +17,7 @@ type Logger interface {
 	Request(msg string, r *http.Request)
 }
 
-type Log struct {
-	*zerolog.Logger
-}
+type Log struct{}
 
 func NewLogger() *Log {
 	log.Debug().Msg("Logger started")
@@ -28,23 +25,23 @@ func NewLogger() *Log {
 }
 
 func (l Log) Info(msg string) {
-	l.Logger.Info().Msg(msg)
+	log.Info().Msg(msg)
 }
 
 func (l Log) Debug(msg string) {
-	l.Logger.Debug().Msg(msg)
+	log.Debug().Msg(msg)
 }
 
 func (l Log) Error(msg string, err error) {
-	l.Logger.Error().Err(err).Msg(msg)
+	log.Error().Err(err).Msg(msg)
 }
 
 func (l Log) Fatal(msg string, err error) {
-	l.Logger.Fatal().Err(err).Msg(msg)
+	log.Fatal().Err(err).Msg(msg)
 }
 
 func (l Log) Warn(msg string) {
-	l.Logger.Warn().Msg(msg)
+	log.Warn().Msg(msg)
 }
 
 func (l Log) Request(msg string, r *http.Request) {

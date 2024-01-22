@@ -17,18 +17,19 @@ import (
 var migrations embed.FS
 
 func RunMigrations(db *sql.DB) {
-	log.Debug("Running migrations...")
+	logger := log.NewLogger()
+	logger.Debug("Running migrations...")
 	driver, err := mysql.WithInstance(db, &mysql.Config{})
 	if err != nil {
-		log.Fatal("Error getting MySQL driver", err)
+		logger.Fatal("Error getting MySQL driver", err)
 	}
 	source, _ := iofs.New(migrations, "migrations")
 	m, err := migrate.NewWithInstance("iofs", source, "mysql", driver)
 	if err != nil {
-		log.Fatal("Error connecting to database", err)
+		logger.Fatal("Error connecting to database", err)
 	}
 	if err := m.Up(); err != nil && fmt.Sprintf("%s", err) != "no change" {
-		log.Fatal("Error running migrations", err)
+		logger.Fatal("Error running migrations", err)
 	}
-	log.Debug("Done!")
+	logger.Debug("Done!")
 }
