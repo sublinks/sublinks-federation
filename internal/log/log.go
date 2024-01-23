@@ -2,10 +2,10 @@ package log
 
 import (
 	"encoding/json"
+	"github.com/rs/zerolog"
 	"io"
 	"net/http"
-
-	"github.com/rs/zerolog/log"
+	"os"
 )
 
 type Logger interface {
@@ -17,34 +17,37 @@ type Logger interface {
 	Request(msg string, r *http.Request)
 }
 
-type Log struct{}
+type Log struct {
+	*zerolog.Logger
+}
 
 func NewLogger() *Log {
-	log.Debug().Msg("Logger started")
-	return &Log{}
+	logger := zerolog.New(os.Stdout)
+	logger.Debug().Msg("Logger started")
+	return &Log{&logger}
 }
 
-func (l Log) Info(msg string) {
-	log.Info().Msg(msg)
+func (l *Log) Info(msg string) {
+	l.Logger.Info().Msg(msg)
 }
 
-func (l Log) Debug(msg string) {
-	log.Debug().Msg(msg)
+func (l *Log) Debug(msg string) {
+	l.Logger.Debug().Msg(msg)
 }
 
-func (l Log) Error(msg string, err error) {
-	log.Error().Err(err).Msg(msg)
+func (l *Log) Error(msg string, err error) {
+	l.Logger.Error().Err(err).Msg(msg)
 }
 
-func (l Log) Fatal(msg string, err error) {
-	log.Fatal().Err(err).Msg(msg)
+func (l *Log) Fatal(msg string, err error) {
+	l.Logger.Fatal().Err(err).Msg(msg)
 }
 
-func (l Log) Warn(msg string) {
-	log.Warn().Msg(msg)
+func (l *Log) Warn(msg string) {
+	l.Logger.Warn().Msg(msg)
 }
 
-func (l Log) Request(msg string, r *http.Request) {
+func (l *Log) Request(msg string, r *http.Request) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
@@ -66,7 +69,7 @@ func (l Log) Request(msg string, r *http.Request) {
 	} else {
 		body = rawbody
 	}
-	log.Debug().
+	l.Logger.Debug().
 		Str("method", r.Method).
 		Str("url", r.URL.String()).
 		Str("user-agent", r.UserAgent()).

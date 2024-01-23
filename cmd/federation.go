@@ -21,12 +21,12 @@ func main() {
 	}
 
 	conn, err := db.Connect()
+	defer conn.Close()
 	if err != nil {
 		logger.Fatal("failed connecting to db", err)
 	}
 	db.RunMigrations(conn)
 
-	defer conn.Close()
 	s := http.NewServer(logger)
 	s.RunServer()
 

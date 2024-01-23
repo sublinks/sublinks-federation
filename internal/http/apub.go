@@ -5,28 +5,28 @@ import (
 )
 
 func (s Server) SetupApubRoutes() {
-	s.HandleFunc("/users/{user}/inbox", getInboxHandler).Methods("GET")
-	s.HandleFunc("/users/{user}/inbox", postInboxHandler).Methods("POST")
-	s.HandleFunc("/users/{user}/outbox", getOutboxHandler).Methods("GET")
-	s.HandleFunc("/users/{user}/outbox", postOutboxHandler).Methods("POST")
+	s.Router.HandleFunc("/users/{user}/inbox", s.getInboxHandler).Methods("GET")
+	s.Router.HandleFunc("/users/{user}/inbox", s.postInboxHandler).Methods("POST")
+	s.Router.HandleFunc("/users/{user}/outbox", s.getOutboxHandler).Methods("GET")
+	s.Router.HandleFunc("/users/{user}/outbox", s.postOutboxHandler).Methods("POST")
 }
 
-func getInboxHandler(w http.ResponseWriter, r *http.Request) {
+func (s Server) getInboxHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("content-type", "application/activity+json")
 }
 
-func postInboxHandler(w http.ResponseWriter, r *http.Request) {
+func (s Server) postInboxHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("content-type", "application/activity+json")
 }
 
-func getOutboxHandler(w http.ResponseWriter, r *http.Request) {
+func (s Server) getOutboxHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("content-type", "application/activity+json")
 }
 
-func postOutboxHandler(w http.ResponseWriter, r *http.Request) {
+func (s Server) postOutboxHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("content-type", "application/activity+json")
 }

@@ -15,7 +15,7 @@ import (
 )
 
 func (s Server) SetupActivityRoutes() {
-	s.HandleFunc("/activities/{action}/{id}", s.getActivityHandler).Methods("GET")
+	s.Router.HandleFunc("/activities/{action}/{id}", s.getActivityHandler).Methods("GET")
 }
 
 func (s Server) getActivityHandler(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +25,7 @@ func (s Server) getActivityHandler(w http.ResponseWriter, r *http.Request) {
 	case "create":
 		obj, err := s.GetPostActivityObject(vars["id"])
 		if err != nil {
-			s.Error("Error reading object", err)
+			s.Logger.Error("Error reading object", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -57,7 +57,7 @@ func (s Server) GetPostActivityObject(id string) (*activitypub.Post, error) {
 	c := lemmy.GetLemmyClient(ctx)
 	post, err := c.GetPost(ctx, id)
 	if err != nil {
-		s.Error("Error reading post", err)
+		s.Logger.Error("Error reading post", err)
 		return nil, err
 	}
 	return activitypub.ConvertPostToApub(post), nil

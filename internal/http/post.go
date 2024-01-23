@@ -10,7 +10,7 @@ import (
 )
 
 func (s Server) SetupPostRoutes() {
-	s.HandleFunc("/post/{postId}", s.getPostHandler).Methods("GET")
+	s.Router.HandleFunc("/post/{postId}", s.getPostHandler).Methods("GET")
 }
 
 func (s Server) getPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +19,7 @@ func (s Server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	c := lemmy.GetLemmyClient(ctx)
 	post, err := c.GetPost(ctx, vars["postId"])
 	if err != nil {
-		s.Error("Error reading post", err)
+		s.Logger.Error("Error reading post", err)
 		return
 	}
 	postLd := activitypub.ConvertPostToApub(post)

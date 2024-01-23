@@ -11,17 +11,17 @@ import (
 )
 
 func (s Server) SetupUserRoutes() {
-	s.HandleFunc("/u/{user}", s.getUserInfoHandler).Methods("GET")
+	s.Router.HandleFunc("/u/{user}", s.getUserInfoHandler).Methods("GET")
 }
 
 func (s Server) getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ctx := context.Background()
 	c := lemmy.GetLemmyClient(ctx)
-	s.Info(fmt.Sprintf("Looking up user %s", vars["user"]))
+	s.Logger.Info(fmt.Sprintf("Looking up user %s", vars["user"]))
 	user, err := c.GetUser(ctx, vars["user"])
 	if err != nil {
-		s.Error("Error reading user", err)
+		s.Logger.Error("Error reading user", err)
 		return
 	}
 

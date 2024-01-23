@@ -50,9 +50,9 @@ func (s Server) RunServer() {
 
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
-		s.Info("Starting server")
+		s.Logger.Info("Starting server")
 		if err := srv.ListenAndServe(); err != nil {
-			s.Error("Error starting server", err)
+			s.Logger.Error("Error starting server", err)
 		}
 	}()
 
@@ -73,5 +73,5 @@ func (s Server) RunServer() {
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
 	// <-ctx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.
-	s.Info("shutting down")
+	s.Logger.Info("shutting down")
 }
