@@ -27,27 +27,27 @@ func NewLogger() *Log {
 	return &Log{&logger}
 }
 
-func (l *Log) Info(msg string) {
-	l.Logger.Info().Msg(msg)
+func (logger *Log) Info(msg string) {
+	logger.Logger.Info().Msg(msg)
 }
 
-func (l *Log) Debug(msg string) {
-	l.Logger.Debug().Msg(msg)
+func (logger *Log) Debug(msg string) {
+	logger.Logger.Debug().Msg(msg)
 }
 
-func (l *Log) Error(msg string, err error) {
-	l.Logger.Error().Err(err).Msg(msg)
+func (logger *Log) Error(msg string, err error) {
+	logger.Logger.Error().Err(err).Msg(msg)
 }
 
-func (l *Log) Fatal(msg string, err error) {
-	l.Logger.Fatal().Err(err).Msg(msg)
+func (logger *Log) Fatal(msg string, err error) {
+	logger.Logger.Fatal().Err(err).Msg(msg)
 }
 
-func (l *Log) Warn(msg string) {
-	l.Logger.Warn().Msg(msg)
+func (logger *Log) Warn(msg string) {
+	logger.Logger.Warn().Msg(msg)
 }
 
-func (l *Log) Request(msg string, r *http.Request) {
+func (logger *Log) Request(msg string, r *http.Request) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
@@ -57,19 +57,19 @@ func (l *Log) Request(msg string, r *http.Request) {
 	var body interface{}
 	rawbody, err := io.ReadAll(r.Body)
 	if err != nil {
-		l.Error("Error reading request body", err)
+		logger.Error("Error reading request body", err)
 		body = nil
 	}
 	if r.ContentLength > 0 && r.Header.Get("Content-Type") == "application/json" {
 		err = json.Unmarshal(rawbody, &body)
 		if err != nil {
-			l.Error("Error parsing request body into json", err)
+			logger.Error("Error parsing request body into json", err)
 			body = nil
 		}
 	} else {
 		body = rawbody
 	}
-	l.Logger.Debug().
+	logger.Logger.Debug().
 		Str("method", r.Method).
 		Str("url", r.URL.String()).
 		Str("user-agent", r.UserAgent()).
