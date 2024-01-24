@@ -1,14 +1,12 @@
-package routes
+package http
 
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sublinks/sublinks-federation/internal/activitypub"
 	"sublinks/sublinks-federation/internal/lemmy"
-	"sublinks/sublinks-federation/internal/log"
-
-	"fmt"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -16,18 +14,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func SetupActivityRoutes(r *mux.Router) {
-	r.HandleFunc("/activities/{action}/{id}", getActivityHandler).Methods("GET")
+func (server *Server) SetupActivityRoutes() {
+	server.Router.HandleFunc("/activities/{action}/{id}", server.getActivityHandler).Methods("GET")
 }
 
-func getActivityHandler(w http.ResponseWriter, r *http.Request) {
+func (server *Server) getActivityHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var content []byte
 	switch vars["action"] {
 	case "create":
-		obj, err := GetPostActivityObject(vars["id"])
+		obj, err := server.GetPostActivityObject(vars["id"])
 		if err != nil {
-			log.Error("Error reading object", err)
+			server.Logger.Error("Error reading object", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -54,12 +52,12 @@ func getActivityHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(content)
 }
 
-func GetPostActivityObject(id string) (*activitypub.Post, error) {
+func (server *Server) GetPostActivityObject(id string) (*activitypub.Post, error) {
 	ctx := context.Background()
 	c := lemmy.GetLemmyClient(ctx)
 	post, err := c.GetPost(ctx, id)
 	if err != nil {
-		log.Error("Error reading post", err)
+		server.Logger.Error("Error reading post", err)
 		return nil, err
 	}
 	return activitypub.ConvertPostToApub(post), nil

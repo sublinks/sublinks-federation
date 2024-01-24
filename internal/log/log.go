@@ -2,54 +2,75 @@ package log
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/rs/zerolog"
 	"io"
 	"net/http"
-
-	"github.com/rs/zerolog/log"
+	"os"
 )
 
-func init() {
-	log.Debug().Msg("Logger started")
+type Logger interface {
+	Info(msg string)
+	Debug(msg string)
+	Error(msg string, err error)
+	Fatal(msg string, err error)
+	Warn(msg string)
+	Request(msg string, r *http.Request)
 }
 
-func Info(msg string) {
-	log.Info().Msg(msg)
+type Log struct {
+	*zerolog.Logger
 }
 
-func Debug(msg string) {
-	log.Debug().Msg(msg)
+func NewLogger(name string) *Log {
+	logger := zerolog.New(os.Stdout)
+	logger.Debug().Msg(fmt.Sprintf("%s logger started", name))
+	return &Log{&logger}
 }
 
-func Error(msg string, err error) {
-	log.Error().Err(err).Msg(msg)
+func (logger *Log) Info(msg string) {
+	logger.Logger.Info().Msg(msg)
 }
 
-func Fatal(msg string, err error) {
-	log.Fatal().Err(err).Msg(msg)
+func (logger *Log) Debug(msg string) {
+	logger.Logger.Debug().Msg(msg)
 }
 
-func Warn(msg string) {
-	log.Warn().Msg(msg)
+func (logger *Log) Error(msg string, err error) {
+	logger.Logger.Error().Err(err).Msg(msg)
 }
 
-func Request(msg string, r *http.Request) {
-	defer r.Body.Close()
+func (logger *Log) Fatal(msg string, err error) {
+	logger.Logger.Fatal().Err(err).Msg(msg)
+}
+
+func (logger *Log) Warn(msg string) {
+	logger.Logger.Warn().Msg(msg)
+}
+
+func (logger *Log) Request(msg string, r *http.Request) {
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			panic("error closing http io reader")
+		}
+	}(r.Body)
 	var body interface{}
 	rawbody, err := io.ReadAll(r.Body)
 	if err != nil {
-		Error("Error reading request body", err)
+		logger.Error("Error reading request body", err)
 		body = nil
 	}
 	if r.ContentLength > 0 && r.Header.Get("Content-Type") == "application/json" {
 		err = json.Unmarshal(rawbody, &body)
 		if err != nil {
-			Error("Error parsing request body into json", err)
+			logger.Error("Error parsing request body into json", err)
 			body = nil
 		}
 	} else {
 		body = rawbody
 	}
-	log.Debug().
+	logger.Logger.Debug().
 		Str("method", r.Method).
 		Str("url", r.URL.String()).
 		Str("user-agent", r.UserAgent()).
