@@ -12,7 +12,7 @@ import (
 
 func main() {
 	// bootstrap logger
-	logger := log.NewLogger()
+	logger := log.NewLogger("main")
 
 	// Load connection string from .env file
 	err := godotenv.Load()

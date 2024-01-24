@@ -2,6 +2,7 @@ package log
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/rs/zerolog"
 	"io"
 	"net/http"
@@ -21,9 +22,9 @@ type Log struct {
 	*zerolog.Logger
 }
 
-func NewLogger() *Log {
+func NewLogger(name string) *Log {
 	logger := zerolog.New(os.Stdout)
-	logger.Debug().Msg("Logger started")
+	logger.Debug().Msg(fmt.Sprintf("%s logger started", name))
 	return &Log{&logger}
 }
 

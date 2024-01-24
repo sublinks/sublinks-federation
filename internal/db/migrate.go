@@ -17,7 +17,7 @@ import (
 var migrations embed.FS
 
 func RunMigrations(db *sql.DB) {
-	logger := log.NewLogger()
+	logger := log.NewLogger("db migrations")
 	logger.Debug("Running migrations...")
 	driver, err := mysql.WithInstance(db, &mysql.Config{})
 	if err != nil {
