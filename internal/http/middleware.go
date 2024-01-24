@@ -9,14 +9,14 @@ type RequestError struct {
 	Msg string `json:"message"`
 }
 
-func (server Server) logMiddleware(next http.Handler) http.Handler {
+func (server *Server) logMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		server.Logger.Request("", r)
 		next.ServeHTTP(w, r)
 	})
 }
 
-func (server Server) notFound(w http.ResponseWriter, r *http.Request) {
+func (server *Server) notFound(w http.ResponseWriter, r *http.Request) {
 	server.Logger.Request("404 Not Found", r)
 	w.WriteHeader(http.StatusNotFound)
 	w.Header().Add("content-type", "application/activity+json")
@@ -24,7 +24,7 @@ func (server Server) notFound(w http.ResponseWriter, r *http.Request) {
 	w.Write(content)
 }
 
-func (server Server) notAllowedMethod(w http.ResponseWriter, r *http.Request) {
+func (server *Server) notAllowedMethod(w http.ResponseWriter, r *http.Request) {
 	server.Logger.Request("405 Method Not Allowed", r)
 	w.WriteHeader(http.StatusNotFound)
 	w.Header().Add("content-type", "application/activity+json")

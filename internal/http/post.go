@@ -9,11 +9,11 @@ import (
 	"sublinks/sublinks-federation/internal/lemmy"
 )
 
-func (server Server) SetupPostRoutes() {
+func (server *Server) SetupPostRoutes() {
 	server.Router.HandleFunc("/post/{postId}", server.getPostHandler).Methods("GET")
 }
 
-func (server Server) getPostHandler(w http.ResponseWriter, r *http.Request) {
+func (server *Server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ctx := context.Background()
 	c := lemmy.GetLemmyClient(ctx)

@@ -14,11 +14,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func (server Server) SetupActivityRoutes() {
+func (server *Server) SetupActivityRoutes() {
 	server.Router.HandleFunc("/activities/{action}/{id}", server.getActivityHandler).Methods("GET")
 }
 
-func (server Server) getActivityHandler(w http.ResponseWriter, r *http.Request) {
+func (server *Server) getActivityHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var content []byte
 	switch vars["action"] {
@@ -52,7 +52,7 @@ func (server Server) getActivityHandler(w http.ResponseWriter, r *http.Request) 
 	w.Write(content)
 }
 
-func (server Server) GetPostActivityObject(id string) (*activitypub.Post, error) {
+func (server *Server) GetPostActivityObject(id string) (*activitypub.Post, error) {
 	ctx := context.Background()
 	c := lemmy.GetLemmyClient(ctx)
 	post, err := c.GetPost(ctx, id)

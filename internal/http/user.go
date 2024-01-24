@@ -10,11 +10,11 @@ import (
 	"sublinks/sublinks-federation/internal/lemmy"
 )
 
-func (server Server) SetupUserRoutes() {
+func (server *Server) SetupUserRoutes() {
 	server.Router.HandleFunc("/u/{user}", server.getUserInfoHandler).Methods("GET")
 }
 
-func (server Server) getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
+func (server *Server) getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ctx := context.Background()
 	c := lemmy.GetLemmyClient(ctx)
