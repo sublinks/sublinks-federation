@@ -24,8 +24,8 @@ func main() {
 	if err != nil {
 		logger.Fatal("failed connecting to db", err)
 	}
-	db.RunMigrations(conn)
 	defer conn.Close()
+	db.RunMigrations(conn)
 
 	s := http.NewServer(logger)
 	s.RunServer()
