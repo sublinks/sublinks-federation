@@ -42,7 +42,7 @@ func (server *Server) getActivityHandler(w http.ResponseWriter, r *http.Request)
 
 		break
 	default:
-		error.Error(fmt.Errorf("action %server not found", vars["action"]))
+		error.Error(fmt.Errorf("action %s not found", vars["action"]))
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
