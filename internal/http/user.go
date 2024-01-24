@@ -10,18 +10,18 @@ import (
 	"sublinks/sublinks-federation/internal/lemmy"
 )
 
-func (s Server) SetupUserRoutes() {
-	s.Router.HandleFunc("/u/{user}", s.getUserInfoHandler).Methods("GET")
+func (server Server) SetupUserRoutes() {
+	server.Router.HandleFunc("/u/{user}", server.getUserInfoHandler).Methods("GET")
 }
 
-func (s Server) getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
+func (server Server) getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ctx := context.Background()
 	c := lemmy.GetLemmyClient(ctx)
-	s.Logger.Info(fmt.Sprintf("Looking up user %s", vars["user"]))
+	server.Logger.Info(fmt.Sprintf("Looking up user %server", vars["user"]))
 	user, err := c.GetUser(ctx, vars["user"])
 	if err != nil {
-		s.Logger.Error("Error reading user", err)
+		server.Logger.Error("Error reading user", err)
 		return
 	}
 

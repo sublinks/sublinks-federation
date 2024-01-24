@@ -9,17 +9,17 @@ import (
 	"sublinks/sublinks-federation/internal/lemmy"
 )
 
-func (s Server) SetupPostRoutes() {
-	s.Router.HandleFunc("/post/{postId}", s.getPostHandler).Methods("GET")
+func (server Server) SetupPostRoutes() {
+	server.Router.HandleFunc("/post/{postId}", server.getPostHandler).Methods("GET")
 }
 
-func (s Server) getPostHandler(w http.ResponseWriter, r *http.Request) {
+func (server Server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	ctx := context.Background()
 	c := lemmy.GetLemmyClient(ctx)
 	post, err := c.GetPost(ctx, vars["postId"])
 	if err != nil {
-		s.Logger.Error("Error reading post", err)
+		server.Logger.Error("Error reading post", err)
 		return
 	}
 	postLd := activitypub.ConvertPostToApub(post)

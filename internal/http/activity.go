@@ -14,18 +14,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func (s Server) SetupActivityRoutes() {
-	s.Router.HandleFunc("/activities/{action}/{id}", s.getActivityHandler).Methods("GET")
+func (server Server) SetupActivityRoutes() {
+	server.Router.HandleFunc("/activities/{action}/{id}", server.getActivityHandler).Methods("GET")
 }
 
-func (s Server) getActivityHandler(w http.ResponseWriter, r *http.Request) {
+func (server Server) getActivityHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var content []byte
 	switch vars["action"] {
 	case "create":
-		obj, err := s.GetPostActivityObject(vars["id"])
+		obj, err := server.GetPostActivityObject(vars["id"])
 		if err != nil {
-			s.Logger.Error("Error reading object", err)
+			server.Logger.Error("Error reading object", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -42,7 +42,7 @@ func (s Server) getActivityHandler(w http.ResponseWriter, r *http.Request) {
 
 		break
 	default:
-		error.Error(fmt.Errorf("action %s not found", vars["action"]))
+		error.Error(fmt.Errorf("action %server not found", vars["action"]))
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -52,12 +52,12 @@ func (s Server) getActivityHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(content)
 }
 
-func (s Server) GetPostActivityObject(id string) (*activitypub.Post, error) {
+func (server Server) GetPostActivityObject(id string) (*activitypub.Post, error) {
 	ctx := context.Background()
 	c := lemmy.GetLemmyClient(ctx)
 	post, err := c.GetPost(ctx, id)
 	if err != nil {
-		s.Logger.Error("Error reading post", err)
+		server.Logger.Error("Error reading post", err)
 		return nil, err
 	}
 	return activitypub.ConvertPostToApub(post), nil

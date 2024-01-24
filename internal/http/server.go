@@ -25,18 +25,18 @@ func NewServer(logger log.Logger) *Server {
 	}
 }
 
-func (s Server) RunServer() {
+func (server Server) RunServer() {
 	var wait time.Duration
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
-	s.SetupUserRoutes()
-	s.SetupPostRoutes()
-	s.SetupApubRoutes()
-	s.SetupActivityRoutes()
-	s.NotFoundHandler = http.HandlerFunc(s.notFound)
-	s.MethodNotAllowedHandler = http.HandlerFunc(s.notAllowedMethod)
-	s.Use(s.logMiddleware)
+	server.SetupUserRoutes()
+	server.SetupPostRoutes()
+	server.SetupApubRoutes()
+	server.SetupActivityRoutes()
+	server.NotFoundHandler = http.HandlerFunc(server.notFound)
+	server.MethodNotAllowedHandler = http.HandlerFunc(server.notAllowedMethod)
+	server.Use(server.logMiddleware)
 
 	srv := &http.Server{
 		Addr: "0.0.0.0:8080",
@@ -45,14 +45,14 @@ func (s Server) RunServer() {
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
 		// pass embed of Server for *mux
-		Handler: s,
+		Handler: server,
 	}
 
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
-		s.Logger.Info("Starting server")
+		server.Logger.Info("Starting server")
 		if err := srv.ListenAndServe(); err != nil {
-			s.Logger.Error("Error starting server", err)
+			server.Logger.Error("Error starting server", err)
 		}
 	}()
 
@@ -73,5 +73,5 @@ func (s Server) RunServer() {
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
 	// <-ctx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.
-	s.Logger.Info("shutting down")
+	server.Logger.Info("shutting down")
 }
