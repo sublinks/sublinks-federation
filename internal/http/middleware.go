@@ -21,7 +21,10 @@ func (server *Server) notFound(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 	w.Header().Add("content-type", "application/activity+json")
 	content, _ := json.Marshal(RequestError{Msg: "not found"})
-	w.Write(content)
+	_, err := w.Write(content)
+	if err != nil {
+		server.Logger.Error("Error writing response", err)
+	}
 }
 
 func (server *Server) notAllowedMethod(w http.ResponseWriter, r *http.Request) {
@@ -29,5 +32,8 @@ func (server *Server) notAllowedMethod(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 	w.Header().Add("content-type", "application/activity+json")
 	content, _ := json.Marshal(RequestError{Msg: "method not allowed"})
-	w.Write(content)
+	_, err := w.Write(content)
+	if err != nil {
+		server.Logger.Error("Error writing response", err)
+	}
 }

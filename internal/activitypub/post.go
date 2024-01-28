@@ -46,8 +46,8 @@ func NewPost(postUrl string, fromUser string, communityUrl string, postTitle str
 			Content:   fmt.Sprintf("This is a post in the %s community", communityUrl),
 			MediaType: "text/markdown",
 		},
-		//Attachment
-		//Image
+		// Attachment
+		// Image
 		Sensitive:       nsfw,
 		CommentsEnabled: true,
 		Language: Language{

@@ -3,10 +3,11 @@ package http
 import (
 	"context"
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"net/http"
 	"sublinks/sublinks-federation/internal/activitypub"
 	"sublinks/sublinks-federation/internal/lemmy"
+
+	"github.com/gorilla/mux"
 )
 
 func (server *Server) SetupPostRoutes() {
@@ -27,5 +28,8 @@ func (server *Server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("content-type", "application/activity+json")
 	content, _ := json.MarshalIndent(postLd, "", "  ")
-	w.Write(content)
+	_, err = w.Write(content)
+	if err != nil {
+		server.Logger.Error("Error writing response", err)
+	}
 }

@@ -3,12 +3,13 @@ package http
 import (
 	"context"
 	"flag"
-	"github.com/gorilla/mux"
 	"net/http"
 	"os"
 	"os/signal"
 	"sublinks/sublinks-federation/internal/log"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 type Server struct {
@@ -34,9 +35,9 @@ func (server *Server) RunServer() {
 	server.SetupPostRoutes()
 	server.SetupApubRoutes()
 	server.SetupActivityRoutes()
-	server.NotFoundHandler = http.HandlerFunc(server.notFound)
-	server.MethodNotAllowedHandler = http.HandlerFunc(server.notAllowedMethod)
-	server.Use(server.logMiddleware)
+	server.Router.NotFoundHandler = http.HandlerFunc(server.notFound)
+	server.Router.MethodNotAllowedHandler = http.HandlerFunc(server.notAllowedMethod)
+	server.Router.Use(server.logMiddleware)
 
 	srv := &http.Server{
 		Addr: "0.0.0.0:8080",
@@ -45,7 +46,7 @@ func (server *Server) RunServer() {
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
 		// pass embed of Server for *mux
-		Handler: server,
+		Handler: server.Router,
 	}
 
 	// Run our server in a goroutine so that it doesn't block.
@@ -69,7 +70,10 @@ func (server *Server) RunServer() {
 	defer cancel()
 	// Doesn't block if no connections, but will otherwise wait
 	// until the timeout deadline.
-	srv.Shutdown(ctx)
+	err := srv.Shutdown(ctx)
+	if err != nil {
+		server.Logger.Error("Error shutting down server", err)
+	}
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
 	// <-ctx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.
