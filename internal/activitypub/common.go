@@ -6,6 +6,6 @@ type Source struct {
 }
 
 type Link struct {
-	Type string `json:"type"` //"Link" | "Image"
-	Href string `json:"href"` //"https://enterprise.lemmy.ml/pictrs/image/eOtYb9iEiB.png"
+	Type string `json:"type"` // "Link" | "Image"
+	Href string `json:"href"` // "https://enterprise.lemmy.ml/pictrs/image/eOtYb9iEiB.png"
 }

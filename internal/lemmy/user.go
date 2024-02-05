@@ -12,9 +12,9 @@ type UserResponse struct {
 type PersonView struct {
 	Person       Person       `json:"person"`
 	PersonCounts PersonCounts `json:"counts"`
-	Comments []Comment `json:"comments"`
-	Posts []Post `json:"posts"`
-	Moderates []Community `json:"moderates"`
+	Comments     []Comment    `json:"comments"`
+	Posts        []Post       `json:"posts"`
+	Moderates    []Community  `json:"moderates"`
 }
 
 type PersonCounts struct {

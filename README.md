@@ -16,7 +16,13 @@ Please post any feature requests or bug reports in the repository's [Issues sect
 
 ## Local Dev
 
-TBD
+### Install pre-requisites:
+
+- `go install golang.org/x/vuln/cmd/govulncheck@latest`
+- `go install -v github.com/go-critic/go-critic/cmd/gocritic@latest`
+- Install [golangci-lint](https://golangci-lint.run/usage/install/#local-installation)
+- Install [pre-commit](https://pre-commit.com/#installation)
+- `pre-commit install`
 
 ### Run
 

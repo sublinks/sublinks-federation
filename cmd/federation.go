@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"sublinks/sublinks-federation/internal/db"
 	"sublinks/sublinks-federation/internal/http"
 	"sublinks/sublinks-federation/internal/log"
@@ -30,5 +29,5 @@ func main() {
 	s := http.NewServer(logger)
 	s.RunServer()
 
-	os.Exit(0)
+	// NOTE: os.Exit(0) will not run defer statements
 }

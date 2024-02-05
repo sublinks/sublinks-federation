@@ -38,25 +38,25 @@ func NewUser(
 	matrixUserId string,
 	bio string,
 	publickey string,
-	Hostname string,
+	hostname string,
 ) User {
 	user := User{}
 	user.Context = GetContext()
-	user.Id = fmt.Sprintf("https://%s/u/%s", Hostname, name)
+	user.Id = fmt.Sprintf("https://%s/u/%s", hostname, name)
 	user.PreferredUsername = name
-	user.Inbox = fmt.Sprintf("https://%s/u/%s/inbox", Hostname, name)
-	user.Outbox = fmt.Sprintf("https://%s/u/%s/outbox", Hostname, name)
+	user.Inbox = fmt.Sprintf("https://%s/u/%s/inbox", hostname, name)
+	user.Outbox = fmt.Sprintf("https://%s/u/%s/outbox", hostname, name)
 	user.Type = "Person"
 	user.Summary = bio
 	user.MatrixUserId = matrixUserId
-	owner := fmt.Sprintf("https://%s/u/%s", Hostname, name)
+	owner := fmt.Sprintf("https://%s/u/%s", hostname, name)
 	user.Publickey = PublicKey{
-		Keyid:        fmt.Sprintf("https://%s/u/%s#main-key", Hostname, name),
+		Keyid:        fmt.Sprintf("https://%s/u/%s#main-key", hostname, name),
 		Owner:        owner,
 		PublicKeyPem: publickey,
 	}
 	user.Published = time.Now()
-	user.Endpoints.SharedInbox = fmt.Sprintf("https://%s/inbox", Hostname)
+	user.Endpoints.SharedInbox = fmt.Sprintf("https://%s/inbox", hostname)
 	return user
 }
 

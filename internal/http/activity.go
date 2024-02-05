@@ -39,17 +39,18 @@ func (server *Server) getActivityHandler(w http.ResponseWriter, r *http.Request)
 				obj.Audience,
 				obj,
 			), "", "  ")
-
-		break
 	default:
-		error.Error(fmt.Errorf("action %s not found", vars["action"]))
+		server.Logger.Error(fmt.Sprintf("action %s not found", vars["action"]), nil)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("content-type", "application/activity+json")
-	w.Write(content)
+	_, err := w.Write(content)
+	if err != nil {
+		server.Logger.Error("Error writing response", err)
+	}
 }
 
 func (server *Server) GetPostActivityObject(id string) (*activitypub.Post, error) {

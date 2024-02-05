@@ -1,0 +1,27 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.5.0
+  hooks:
+    - id: trailing-whitespace
+    - id: end-of-file-fixer
+    - id: check-yaml
+    - id: check-added-large-files
+- repo: https://github.com/zricethezav/gitleaks
+  rev: v8.18.1
+  hooks:
+    - id: gitleaks
+- repo: https://github.com/tekwizely/pre-commit-golang
+  rev: v1.0.0-rc.1
+  hooks:
+    - id: go-mod-tidy-repo
+    - id: go-fmt
+    - id: go-critic
+    - id: golangci-lint-repo-mod
+    - id: go-test-repo-mod
+      always_run: true
+      verbose: true
+    - id: my-cmd-repo
+      name: go-vuln-repo
+      args: [ govulncheck, ./... ]
