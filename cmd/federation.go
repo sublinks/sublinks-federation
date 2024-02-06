@@ -28,28 +28,25 @@ func main() {
 	defer conn.Close()
 	conn.RunMigrations()
 
-	mqConnection, err := queue.Connect()
+	q := queue.NewQueue(logger)
+	err = q.Connect()
 	if err != nil {
 		logger.Fatal("failed connecting to queue service", err)
 	}
-	defer mqConnection.Close()
-	producer, err := queue.CreateProducer(mqConnection, "backend")
+	defer q.Close()
+	err = q.CreateProducer("backend")
 	if err != nil {
 		logger.Fatal("failed creating producer", err)
 	}
-	defer producer.Close()
-	messages, err := queue.CreateConsumer(mqConnection, "federation")
+	err = q.CreateConsumer("federation")
 	if err != nil {
 		logger.Fatal("failed creating consumer", err)
 	}
-	go func() {
-		for message := range messages {
-			logger.Debug(fmt.Sprintf(" > Received message: %s\n", message.Body))
-		}
-	}()
+	q.StartConsumer("federation")
 	config := http.ServerConfig{
 		Logger:   logger,
 		Database: conn,
+		Queue:    q,
 	}
 	s := http.NewServer(config)
 	s.RunServer()

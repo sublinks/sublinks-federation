@@ -1,17 +1,13 @@
 package queue
 
-import (
-	amqp "github.com/rabbitmq/amqp091-go"
-)
-
-func CreateConsumer(q *amqp.Connection, queueName string) (<-chan amqp.Delivery, error) {
-	channelRabbitMQ, err := q.Channel()
+func (q *Queue) CreateConsumer(queueName string) error {
+	channelRabbitMQ, err := q.Connection.Channel()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	err = CreateQueue(channelRabbitMQ, queueName)
+	err = q.CreateQueue(channelRabbitMQ, queueName)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	// Subscribing to QueueService1 for getting messages.
 	messages, err := channelRabbitMQ.Consume(
@@ -24,7 +20,20 @@ func CreateConsumer(q *amqp.Connection, queueName string) (<-chan amqp.Delivery,
 		nil,       // arguments
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return messages, nil
+	q.Consumers[queueName] = messages
+	return nil
+}
+
+func (q *Queue) StartConsumer(queueName string) {
+	messages, ok := q.Consumers[queueName]
+	if !ok {
+		return
+	}
+	go func() {
+		for message := range messages {
+			q.Logger.Printf(" > Received message: %s\n", message.Body)
+		}
+	}()
 }
