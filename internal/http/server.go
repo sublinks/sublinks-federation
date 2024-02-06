@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sublinks/sublinks-federation/internal/db"
 	"sublinks/sublinks-federation/internal/log"
 	"time"
 
@@ -15,14 +16,21 @@ import (
 type Server struct {
 	*mux.Router
 	log.Logger
+	*db.Database
 }
 
-func NewServer(logger log.Logger) *Server {
+type ServerConfig struct {
+	log.Logger
+	*db.Database
+}
+
+func NewServer(config ServerConfig) *Server {
 	r := mux.NewRouter()
 
 	return &Server{
-		Router: r,
-		Logger: logger,
+		Router:   r,
+		Logger:   config.Logger,
+		Database: config.Database,
 	}
 }
 

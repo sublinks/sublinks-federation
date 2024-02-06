@@ -20,12 +20,13 @@ func main() {
 		logger.Warn(fmt.Sprintf("failed to load env, %v", err))
 	}
 
-	conn, err := db.Connect()
+	conn := db.NewDatabase()
+	err = conn.Connect()
 	if err != nil {
 		logger.Fatal("failed connecting to db", err)
 	}
 	defer conn.Close()
-	db.RunMigrations(conn)
+	conn.RunMigrations()
 
 	mqConnection, err := queue.Connect()
 	if err != nil {
@@ -46,8 +47,10 @@ func main() {
 			logger.Debug(fmt.Sprintf(" > Received message: %s\n", message.Body))
 		}
 	}()
-	s := http.NewServer(logger)
+	config := http.ServerConfig{
+		Logger:   logger,
+		Database: conn,
+	}
+	s := http.NewServer(config)
 	s.RunServer()
-
-	// NOTE: os.Exit(0) will not run defer statements
 }
