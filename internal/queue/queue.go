@@ -10,24 +10,23 @@ import (
 
 type Queue interface {
 	Connect() error
-	CreateProducer(queueName string) error
-	CreateConsumer(queueName string) error
-	StartConsumer(queueName string)
+	PublishMessage(queueName string, message string) error
+	StartConsumer(queueName string) error
 	Close()
 }
 
 type RabbitQueue struct {
 	*amqp.Connection
-	Publishers map[string]MessagePublisher
-	Consumers  map[string]<-chan amqp.Delivery
-	Logger     *log.Log
+	publishers map[string]*publisher
+	consumers  map[string]<-chan amqp.Delivery
+	logger     *log.Log
 }
 
 func NewQueue(logger *log.Log) Queue {
 	return &RabbitQueue{
-		Logger:     logger,
-		Publishers: make(map[string]MessagePublisher),
-		Consumers:  make(map[string]<-chan amqp.Delivery),
+		logger:     logger,
+		publishers: make(map[string]*publisher),
+		consumers:  make(map[string]<-chan amqp.Delivery),
 	}
 }
 
@@ -43,7 +42,7 @@ func (q *RabbitQueue) Connect() error {
 	return nil
 }
 
-func (q *RabbitQueue) CreateQueue(channelRabbitMQ *amqp.Channel, queueName string) error {
+func (q *RabbitQueue) createQueue(channelRabbitMQ *amqp.Channel, queueName string) error {
 	// With the instance and declare Queues that we can
 	// publish and subscribe to.
 	_, err := channelRabbitMQ.QueueDeclare(
@@ -58,7 +57,7 @@ func (q *RabbitQueue) CreateQueue(channelRabbitMQ *amqp.Channel, queueName strin
 }
 
 func (q *RabbitQueue) Close() {
-	for _, publisher := range q.Publishers {
+	for _, publisher := range q.publishers {
 		publisher.Close()
 	}
 	q.Connection.Close()

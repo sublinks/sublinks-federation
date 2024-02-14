@@ -6,31 +6,31 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type MessagePublisher interface {
-	PublishMessage(message string) error
-	Close() error
-}
-
-type Publisher struct {
+type publisher struct {
 	QueueName string
 	*amqp.Channel
 }
 
-func (q *RabbitQueue) CreateProducer(queueName string) error {
+func (q *RabbitQueue) createProducer(queueName string) error {
 	channelRabbitMQ, err := q.Connection.Channel()
 	if err != nil {
 		return err
 	}
-	err = q.CreateQueue(channelRabbitMQ, queueName)
+	err = q.createQueue(channelRabbitMQ, queueName)
 	if err != nil {
 		return err
 	}
-	q.Publishers[queueName] = &Publisher{queueName, channelRabbitMQ}
+	q.publishers[queueName] = &publisher{queueName, channelRabbitMQ}
 	return nil
 }
 
-func (p *Publisher) PublishMessage(message string) error {
-	return p.Channel.PublishWithContext(
+func (q *RabbitQueue) PublishMessage(queueName string, message string) error {
+	publisher, ok := q.publishers[queueName]
+	if !ok {
+		_ = q.createProducer(queueName)
+		publisher = q.publishers[queueName]
+	}
+	return publisher.Channel.PublishWithContext(
 		context.TODO(),
 		"backend", // exchange
 		"",        // routing key

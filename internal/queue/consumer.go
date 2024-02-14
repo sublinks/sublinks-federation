@@ -1,11 +1,13 @@
 package queue
 
-func (q *RabbitQueue) CreateConsumer(queueName string) error {
+import "errors"
+
+func (q *RabbitQueue) createConsumer(queueName string) error {
 	channelRabbitMQ, err := q.Connection.Channel()
 	if err != nil {
 		return err
 	}
-	err = q.CreateQueue(channelRabbitMQ, queueName)
+	err = q.createQueue(channelRabbitMQ, queueName)
 	if err != nil {
 		return err
 	}
@@ -22,18 +24,24 @@ func (q *RabbitQueue) CreateConsumer(queueName string) error {
 	if err != nil {
 		return err
 	}
-	q.Consumers[queueName] = messages
+	q.consumers[queueName] = messages
 	return nil
 }
 
-func (q *RabbitQueue) StartConsumer(queueName string) {
-	messages, ok := q.Consumers[queueName]
+// TODO: Implement a way to either pass a callback function or return messages/chan
+func (q *RabbitQueue) StartConsumer(queueName string) error {
+	err := q.createConsumer(queueName)
+	if err != nil {
+		return err
+	}
+	messages, ok := q.consumers[queueName]
 	if !ok {
-		return
+		return errors.New("consumer not found")
 	}
 	go func() {
 		for message := range messages {
-			q.Logger.Printf(" > Received message: %s\n", message.Body)
+			q.logger.Printf(" > Received message: %s\n", message.Body)
 		}
 	}()
+	return nil
 }

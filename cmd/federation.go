@@ -34,15 +34,10 @@ func main() {
 		logger.Fatal("failed connecting to queue service", err)
 	}
 	defer q.Close()
-	err = q.CreateProducer("backend")
+	err = q.StartConsumer("federation")
 	if err != nil {
-		logger.Fatal("failed creating producer", err)
+		logger.Fatal("failed starting to consumer", err)
 	}
-	err = q.CreateConsumer("federation")
-	if err != nil {
-		logger.Fatal("failed creating consumer", err)
-	}
-	q.StartConsumer("federation")
 	config := http.ServerConfig{
 		Logger:   logger,
 		Database: conn,
