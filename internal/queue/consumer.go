@@ -1,6 +1,6 @@
 package queue
 
-func (q *Queue) CreateConsumer(queueName string) error {
+func (q *RabbitQueue) CreateConsumer(queueName string) error {
 	channelRabbitMQ, err := q.Connection.Channel()
 	if err != nil {
 		return err
@@ -26,7 +26,7 @@ func (q *Queue) CreateConsumer(queueName string) error {
 	return nil
 }
 
-func (q *Queue) StartConsumer(queueName string) {
+func (q *RabbitQueue) StartConsumer(queueName string) {
 	messages, ok := q.Consumers[queueName]
 	if !ok {
 		return

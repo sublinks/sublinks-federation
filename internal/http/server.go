@@ -18,13 +18,13 @@ type Server struct {
 	*mux.Router
 	log.Logger
 	*db.Database
-	*queue.Queue
+	queue.Queue
 }
 
 type ServerConfig struct {
 	log.Logger
 	*db.Database
-	*queue.Queue
+	queue.Queue
 }
 
 func NewServer(config ServerConfig) *Server {

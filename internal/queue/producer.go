@@ -6,12 +6,17 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+type MessagePublisher interface {
+	PublishMessage(message string) error
+	Close() error
+}
+
 type Publisher struct {
 	QueueName string
 	*amqp.Channel
 }
 
-func (q *Queue) CreateProducer(queueName string) error {
+func (q *RabbitQueue) CreateProducer(queueName string) error {
 	channelRabbitMQ, err := q.Connection.Channel()
 	if err != nil {
 		return err

@@ -8,18 +8,26 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type Queue struct {
+type Queue interface {
+	Connect() error
+	CreateProducer(queueName string) error
+	CreateConsumer(queueName string) error
+	StartConsumer(queueName string)
+	Close()
+}
+
+type RabbitQueue struct {
 	*amqp.Connection
-	Publishers map[string]*Publisher
+	Publishers map[string]MessagePublisher
 	Consumers  map[string]<-chan amqp.Delivery
 	Logger     *log.Log
 }
 
-func NewQueue(logger *log.Log) *Queue {
-	return &Queue{Logger: logger}
+func NewQueue(logger *log.Log) Queue {
+	return &RabbitQueue{Logger: logger}
 }
 
-func (q *Queue) Connect() error {
+func (q *RabbitQueue) Connect() error {
 	// Get the connection string from the environment variable
 	amqpServerURL := os.Getenv("AMQP_SERVER_URL")
 	// Create a new RabbitMQ connection.
@@ -31,7 +39,7 @@ func (q *Queue) Connect() error {
 	return nil
 }
 
-func (q *Queue) CreateQueue(channelRabbitMQ *amqp.Channel, queueName string) error {
+func (q *RabbitQueue) CreateQueue(channelRabbitMQ *amqp.Channel, queueName string) error {
 	// With the instance and declare Queues that we can
 	// publish and subscribe to.
 	_, err := channelRabbitMQ.QueueDeclare(
@@ -45,7 +53,7 @@ func (q *Queue) CreateQueue(channelRabbitMQ *amqp.Channel, queueName string) err
 	return err
 }
 
-func (q *Queue) Close() {
+func (q *RabbitQueue) Close() {
 	for _, publisher := range q.Publishers {
 		publisher.Close()
 	}
