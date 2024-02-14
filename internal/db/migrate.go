@@ -1,7 +1,6 @@
 package db
 
 import (
-	"database/sql"
 	"embed"
 	_ "embed"
 	"fmt"
@@ -16,10 +15,10 @@ import (
 //go:embed "migrations"
 var migrations embed.FS
 
-func RunMigrations(db *sql.DB) {
+func (d *PostgresDB) RunMigrations() {
 	logger := log.NewLogger("db migrations")
 	logger.Debug("Running migrations...")
-	driver, err := mysql.WithInstance(db, &mysql.Config{})
+	driver, err := mysql.WithInstance(d.DB, &mysql.Config{})
 	if err != nil {
 		logger.Fatal("Error getting MySQL driver", err)
 	}

@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sublinks/sublinks-federation/internal/db"
 	"sublinks/sublinks-federation/internal/log"
+	"sublinks/sublinks-federation/internal/queue"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -15,14 +17,24 @@ import (
 type Server struct {
 	*mux.Router
 	log.Logger
+	db.Database
+	queue.Queue
 }
 
-func NewServer(logger log.Logger) *Server {
+type ServerConfig struct {
+	log.Logger
+	db.Database
+	queue.Queue
+}
+
+func NewServer(config ServerConfig) *Server {
 	r := mux.NewRouter()
 
 	return &Server{
-		Router: r,
-		Logger: logger,
+		Router:   r,
+		Logger:   config.Logger,
+		Database: config.Database,
+		Queue:    config.Queue,
 	}
 }
 
