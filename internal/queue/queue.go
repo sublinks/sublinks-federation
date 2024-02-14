@@ -24,7 +24,11 @@ type RabbitQueue struct {
 }
 
 func NewQueue(logger *log.Log) Queue {
-	return &RabbitQueue{Logger: logger}
+	return &RabbitQueue{
+		Logger:     logger,
+		Publishers: make(map[string]MessagePublisher),
+		Consumers:  make(map[string]<-chan amqp.Delivery),
+	}
 }
 
 func (q *RabbitQueue) Connect() error {
