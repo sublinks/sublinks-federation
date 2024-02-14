@@ -8,15 +8,21 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type Database struct {
+type Database interface {
+	Connect() error
+	RunMigrations()
+	Close() error
+}
+
+type PostgresDB struct {
 	*sql.DB
 }
 
-func NewDatabase() *Database {
-	return &Database{}
+func NewDatabase() Database {
+	return &PostgresDB{}
 }
 
-func (d *Database) Connect() error {
+func (d *PostgresDB) Connect() error {
 	database, err := sql.Open("mysql", os.Getenv("DB_DSN"))
 	if err != nil {
 		return err

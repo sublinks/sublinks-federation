@@ -15,7 +15,7 @@ import (
 //go:embed "migrations"
 var migrations embed.FS
 
-func (d *Database) RunMigrations() {
+func (d *PostgresDB) RunMigrations() {
 	logger := log.NewLogger("db migrations")
 	logger.Debug("Running migrations...")
 	driver, err := mysql.WithInstance(d.DB, &mysql.Config{})

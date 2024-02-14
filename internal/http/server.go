@@ -17,13 +17,13 @@ import (
 type Server struct {
 	*mux.Router
 	log.Logger
-	*db.Database
+	db.Database
 	queue.Queue
 }
 
 type ServerConfig struct {
 	log.Logger
-	*db.Database
+	db.Database
 	queue.Queue
 }
 
