@@ -1,35 +1,71 @@
 package db
 
 import (
-	"database/sql"
 	"os"
+	"strconv"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 type Database interface {
 	Connect() error
 	RunMigrations()
-	Close() error
+	Find(interface{}, ...interface{}) error
+	Save(interface{}) error
+}
+
+func (db *PostgresDB) Find(data interface{}, conds ...interface{}) error {
+	db.tx = db.DB.Find(data, conds)
+	return db.tx.Error
 }
 
 type PostgresDB struct {
-	*sql.DB
+	*gorm.DB
+	tx *gorm.DB
 }
 
 func NewDatabase() Database {
 	return &PostgresDB{}
 }
 
+func (d *PostgresDB) Save(data interface{}) error {
+	db := d.DB.Save(data)
+	return db.Error
+}
+
 func (d *PostgresDB) Connect() error {
-	database, err := sql.Open("mysql", os.Getenv("DB_DSN"))
+	database, err := gorm.Open(mysql.Open(os.Getenv("DB_DSN")), &gorm.Config{})
 	if err != nil {
 		return err
 	}
-	database.SetConnMaxLifetime(time.Minute * 3)
-	database.SetMaxOpenConns(10)
-	database.SetMaxIdleConns(10)
+	// Get generic database object sql.DB to use its functions
+	sqlDB, err := database.DB()
+	if err != nil {
+		return err
+	}
+
+	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
+	maxIdleCons, err := strconv.Atoi(os.Getenv("DB_MAX_IDLE_CONNS"))
+	if err != nil {
+		maxIdleCons = 10
+	}
+	sqlDB.SetMaxIdleConns(maxIdleCons)
+
+	// SetMaxOpenConns sets the maximum number of open connections to the database.
+	maxOpenCons, err := strconv.Atoi(os.Getenv("DB_MAX_OPEN_CONNS"))
+	if err != nil {
+		maxOpenCons = 100
+	}
+	sqlDB.SetMaxOpenConns(maxOpenCons)
+
+	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
+	maxConnLifetime, err := time.ParseDuration(os.Getenv("DB_MAX_CONN_LIFETIME"))
+	if err != nil {
+		maxConnLifetime = 60
+	}
+	sqlDB.SetConnMaxLifetime(maxConnLifetime * time.Minute)
 	d.DB = database
 	return nil
 }

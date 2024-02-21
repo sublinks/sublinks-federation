@@ -25,7 +25,6 @@ func main() {
 	if err != nil {
 		logger.Fatal("failed connecting to db", err)
 	}
-	defer conn.Close()
 	conn.RunMigrations()
 
 	q := queue.NewQueue(logger)
