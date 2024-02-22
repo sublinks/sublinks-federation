@@ -2,39 +2,55 @@ package queue
 
 import "errors"
 
-func (q *RabbitQueue) createConsumer(queueName string) error {
+func (q *RabbitQueue) createConsumer(queueData ConsumerQueue) error {
 	channelRabbitMQ, err := q.Connection.Channel()
 	if err != nil {
 		return err
 	}
-	err = q.createQueue(channelRabbitMQ, queueName)
+	err = q.createQueue(channelRabbitMQ, queueData.QueueName)
 	if err != nil {
 		return err
 	}
+	err = channelRabbitMQ.QueueBind(
+		queueData.QueueName,  // queue name
+		queueData.RoutingKey, // routing key
+		queueData.Exchange,   // exchange
+		false,
+		nil)
+	if err != nil {
+		return err
+	}
+
 	// Subscribing to QueueService1 for getting messages.
 	messages, err := channelRabbitMQ.Consume(
-		queueName, // queue name
-		"",        // consumer
-		true,      // auto-ack
-		false,     // exclusive
-		false,     // no local
-		false,     // no wait
-		nil,       // arguments
+		queueData.QueueName, // queue name
+		"",                  // consumer
+		false,               // auto-ack
+		false,               // exclusive
+		false,               // no local
+		false,               // no wait
+		nil,                 // arguments
 	)
 	if err != nil {
 		return err
 	}
-	q.consumers[queueName] = messages
+	q.consumers[queueData.QueueName] = messages
 	return nil
 }
 
+type ConsumerQueue struct {
+	Exchange   string
+	QueueName  string
+	RoutingKey string
+}
+
 // TODO: Implement a way to either pass a callback function or return messages/chan
-func (q *RabbitQueue) StartConsumer(queueName string) error {
-	err := q.createConsumer(queueName)
+func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue, callback func(interface{})) error {
+	err := q.createConsumer(queueData)
 	if err != nil {
 		return err
 	}
-	messages, ok := q.consumers[queueName]
+	messages, ok := q.consumers[queueData.QueueName]
 	if !ok {
 		return errors.New("consumer not found")
 	}

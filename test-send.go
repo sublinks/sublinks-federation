@@ -15,7 +15,7 @@ func failOnError(err error, msg string) {
 }
 
 func main() {
-	conn, err := amqp.Dial("amqp://guest:guest@queue:5672/")
+	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
@@ -28,22 +28,30 @@ func main() {
 
 	body := `
   {
-    "type": "create_actor",
-    "data": {
-      "actor_type": "user",
-      "id": "lazyguru@discuss.online",
-      "private_key": "some super secure string",
-      "public_key": "the public key"
-    }
+	"actor_type": "user",
+	"id": "lazyguru@discuss.online",
+    "private_key": "some super secure string",
+    "public_key": "the public key"
   }
   `
+	err = ch.ExchangeDeclare(
+		"federation", // name
+		"direct",     // type
+		true,         // durable
+		false,        // auto-deleted
+		false,        // internal
+		false,        // no-wait
+		nil,          // arguments
+	)
+	failOnError(err, "Failed to declare an exchange")
 	err = ch.PublishWithContext(ctx,
-		"",           // exchange
-		"federation", // routing key
-		false,        // mandatory
-		false,        // immediate
+		"federation",   // exchange
+		"actor.create", // routing key
+		false,          // mandatory
+		false,          // immediate
 		amqp.Publishing{
-			ContentType: "text/plain",
+			ContentType: "application/json",
+			Timestamp:   time.Now(),
 			Body:        []byte(body),
 		})
 	failOnError(err, "Failed to publish a message")

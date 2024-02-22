@@ -11,7 +11,7 @@ import (
 type Queue interface {
 	Connect() error
 	PublishMessage(queueName string, message string) error
-	StartConsumer(queueName string) error
+	StartConsumer(queueData ConsumerQueue, callback func(interface{})) error
 	Close()
 }
 
