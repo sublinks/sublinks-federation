@@ -1,6 +1,9 @@
 package queue
 
-import "errors"
+import (
+	"errors"
+	"sublinks/sublinks-federation/internal/worker"
+)
 
 func (q *RabbitQueue) createConsumer(queueData ConsumerQueue) error {
 	channelRabbitMQ, err := q.Connection.Channel()
@@ -45,7 +48,7 @@ type ConsumerQueue struct {
 }
 
 // TODO: Implement a way to either pass a callback function or return messages/chan
-func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue, callback func(interface{})) error {
+func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue, worker worker.Worker) error {
 	err := q.createConsumer(queueData)
 	if err != nil {
 		return err
@@ -56,7 +59,18 @@ func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue, callback func(inter
 	}
 	go func() {
 		for message := range messages {
-			q.logger.Printf(" > Received message: %s\n", message.Body)
+			err := worker.Process(message.Body)
+			if err != nil {
+				err = message.Acknowledger.Nack(message.DeliveryTag, false, true)
+				if err != nil {
+					panic(err) // I know this isn't good. Will need to fix it
+				}
+				continue
+			}
+			err = message.Acknowledger.Ack(message.DeliveryTag, false)
+			if err != nil {
+				panic(err) // I know this isn't good. Will need to fix it
+			}
 		}
 	}()
 	return nil

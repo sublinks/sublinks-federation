@@ -1,11 +1,11 @@
 package http
 
 import (
-	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sublinks/sublinks-federation/internal/activitypub"
-	"sublinks/sublinks-federation/internal/lemmy"
+	"sublinks/sublinks-federation/internal/model"
 
 	"github.com/gorilla/mux"
 )
@@ -16,14 +16,13 @@ func (server *Server) SetupPostRoutes() {
 
 func (server *Server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	ctx := context.Background()
-	c := lemmy.GetLemmyClient(ctx)
-	post, err := c.GetPost(ctx, vars["postId"])
+	post := model.Post{UrlStub: vars["postId"]}
+	err := server.Database.Find(&post)
 	if err != nil {
-		server.Logger.Error("Error reading post", err)
+		server.Logger.Error(fmt.Sprintf("Error reading post: %+v %s", post, err), err)
 		return
 	}
-	postLd := activitypub.ConvertPostToApub(post)
+	postLd := activitypub.ConvertPostToPage(&post)
 	postLd.Context = activitypub.GetContext()
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("content-type", "application/activity+json")

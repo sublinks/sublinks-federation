@@ -2,20 +2,38 @@ package main
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"os"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+
+	"sublinks/sublinks-federation/internal/log"
+
+	"github.com/joho/godotenv"
 )
 
 func failOnError(err error, msg string) {
 	if err != nil {
-		log.Panicf("%s: %s", msg, err)
+		logger := log.NewLogger("test-send")
+		logger.Panic().Err(err).Msg(msg)
 	}
 }
 
 func main() {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	// bootstrap logger
+	logger := log.NewLogger("test-send")
+
+	// Load connection string from .env file
+	err := godotenv.Load()
+	if err != nil {
+		logger.Warn(fmt.Sprintf("failed to load env, %v", err))
+	}
+
+	// Get the connection string from the environment variable
+	amqpServerURL := os.Getenv("AMQP_SERVER_URL")
+	// Create a new RabbitMQ connection.
+	conn, err := amqp.Dial(amqpServerURL)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
@@ -57,6 +75,9 @@ func main() {
 }
 
 func sendMessage(conn *amqp.Connection, ctx context.Context, routingKey string, body string) {
+	// bootstrap logger
+	logger := log.NewLogger("test-send")
+
 	ch, err := conn.Channel()
 	failOnError(err, "Failed to open a channel")
 	defer ch.Close()
@@ -71,5 +92,32 @@ func sendMessage(conn *amqp.Connection, ctx context.Context, routingKey string, 
 			Body:        []byte(body),
 		})
 	failOnError(err, "Failed to publish a message")
-	log.Printf(" [x] Sent %s\n", body)
+	logger.Info(fmt.Sprintf("[x] Sent %s", body))
+
+	ch2, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	defer ch2.Close()
+
+	body = `
+{
+  "id": "test-post-1",
+  "title": "This is a post",
+  "content": "I am a lazy guru",
+  "published": "2021-08-01T12:34:59Z",
+  "community": "https://sublinks.org/c/test-community",
+  "author": "https://sublinks.org/u/lazyguru"
+}`
+
+	err = ch2.PublishWithContext(ctx,
+		"federation",  // exchange
+		"post.create", // routing key
+		false,         // mandatory
+		false,         // immediate
+		amqp.Publishing{
+			ContentType: "application/json",
+			Timestamp:   time.Now(),
+			Body:        []byte(body),
+		})
+	failOnError(err, "Failed to publish a message")
+	logger.Info(fmt.Sprintf("[x] Sent %s", body))
 }

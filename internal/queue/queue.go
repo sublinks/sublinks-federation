@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"sublinks/sublinks-federation/internal/log"
+	"sublinks/sublinks-federation/internal/worker"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -11,7 +12,7 @@ import (
 type Queue interface {
 	Connect() error
 	PublishMessage(queueName string, message string) error
-	StartConsumer(queueData ConsumerQueue, callback func(interface{})) error
+	StartConsumer(queueData ConsumerQueue, worker worker.Worker) error
 	Close()
 }
 

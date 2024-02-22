@@ -1,9 +1,14 @@
 package model
 
+import "time"
+
 type Post struct {
-	Id      string `json:"id"`
-	Action  string `json:"action"`
-	Title   string `json:"title"`
-	Author  string `json:"author"`
-	Content string `json:"content"`
+	Id        string    `json:"id" gorm:"primary_key"`
+	UrlStub   string    `json:"url_stub"`
+	Title     string    `json:"title"`
+	Author    string    `json:"author"`
+	Community string    `json:"community"`
+	Nsfw      bool      `json:"nsfw"`
+	Published time.Time `json:"published"`
+	Content   string    `json:"content"`
 }

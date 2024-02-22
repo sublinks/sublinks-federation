@@ -6,6 +6,8 @@ import (
 	"sublinks/sublinks-federation/internal/http"
 	"sublinks/sublinks-federation/internal/log"
 	"sublinks/sublinks-federation/internal/queue"
+	"sublinks/sublinks-federation/internal/repository"
+	"sublinks/sublinks-federation/internal/worker"
 
 	"github.com/joho/godotenv"
 )
@@ -33,10 +35,8 @@ func main() {
 		logger.Fatal("failed connecting to queue service", err)
 	}
 	defer q.Close()
-	err = q.StartConsumer("federation")
-	if err != nil {
-		logger.Fatal("failed starting to consumer", err)
-	}
+	processActors(logger, conn, q)
+	processPosts(logger, conn, q)
 	config := http.ServerConfig{
 		Logger:   logger,
 		Database: conn,
@@ -44,4 +44,40 @@ func main() {
 	}
 	s := http.NewServer(config)
 	s.RunServer()
+}
+
+func processActors(logger *log.Log, conn db.Database, q queue.Queue) {
+	actorCQ := queue.ConsumerQueue{
+		QueueName:  "actor_create_queue",
+		Exchange:   "federation",
+		RoutingKey: "actor.create",
+	}
+
+	aw := worker.ActorWorker{
+		Logger:     logger,
+		Repository: repository.NewRepository(conn),
+	}
+
+	err := q.StartConsumer(actorCQ, &aw)
+	if err != nil {
+		logger.Fatal("failed starting actor consumer", err)
+	}
+}
+
+func processPosts(logger *log.Log, conn db.Database, q queue.Queue) {
+	postCQ := queue.ConsumerQueue{
+		QueueName:  "post_queue",
+		Exchange:   "federation",
+		RoutingKey: "post.create",
+	}
+
+	aw := worker.PostWorker{
+		Logger:     logger,
+		Repository: repository.NewRepository(conn),
+	}
+
+	err := q.StartConsumer(postCQ, &aw)
+	if err != nil {
+		logger.Fatal("failed starting post consumer", err)
+	}
 }
