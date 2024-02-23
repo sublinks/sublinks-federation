@@ -19,36 +19,52 @@ func main() {
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 
-	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
-	defer ch.Close()
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	body := `
-  {
-	"actor_type": "user",
-	"id": "lazyguru@discuss.online",
-    "private_key": "some super secure string",
-    "public_key": "the public key"
-  }
-  `
-	err = ch.ExchangeDeclare(
-		"federation", // name
-		"direct",     // type
-		true,         // durable
-		false,        // auto-deleted
-		false,        // internal
-		false,        // no-wait
-		nil,          // arguments
-	)
-	failOnError(err, "Failed to declare an exchange")
+	sendMessage(conn, ctx, "actor.create", `
+{
+  "actor_type": "Person",
+  "id": "https://sublinks.org/u/lazyguru",
+  "username": "lazyguru",
+  "name": "Lazyguru",
+  "bio": "I am a lazy guru",
+  "matrix_user_id": "@lazyguru:discuss.online",
+  "private_key": "some super secure string",
+  "public_key": "the public key"
+}`)
+
+	sendMessage(conn, ctx, "actor.create", `
+{
+  "actor_type": "Group",
+  "id": "https://sublinks.org/c/test_community",
+  "username": "test_community",
+  "name": "Test Community",
+  "private_key": "some super secure string",
+  "public_key": "the public key",
+  "sensitive": false
+}`)
+
+	sendMessage(conn, ctx, "post.create", `
+{
+  "id": "https://sublinks.org/post/test-post-1",
+  "title": "This is a post",
+  "content": "I am a lazy guru",
+  "published": "2021-08-01T12:34:59Z",
+  "community": "https://sublinks.org/c/test_community",
+  "author": "https://sublinks.org/u/lazyguru"
+}`)
+}
+
+func sendMessage(conn *amqp.Connection, ctx context.Context, routingKey string, body string) {
+	ch, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	defer ch.Close()
 	err = ch.PublishWithContext(ctx,
-		"federation",   // exchange
-		"actor.create", // routing key
-		false,          // mandatory
-		false,          // immediate
+		"federation", // exchange
+		routingKey,   // routing key
+		false,        // mandatory
+		false,        // immediate
 		amqp.Publishing{
 			ContentType: "application/json",
 			Timestamp:   time.Now(),
