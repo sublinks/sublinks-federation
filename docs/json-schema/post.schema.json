@@ -1,0 +1,37 @@
+{
+  "$id": "https://sublinks.org/post.schema.json",
+  "title": "Post",
+  "description": "A post in a Sublinks community attributable to an author.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "The unique identifier for the post.",
+      "type": "string"
+    },
+    "title": {
+      "description": "The display title of the post.",
+      "type": "string"
+    },
+    "content": {
+      "description": "The content of the post.",
+      "type": "string"
+    },
+    "community": {
+      "description": "A bio of the actor (bio for person, summary for community/group).",
+      "type": "string"
+    },
+    "author": {
+      "description": "The author of the post.",
+      "type": "string"
+    },
+    "published": {
+      "description": "The date and time the post was published.",
+      "type": "string"
+    },
+    "sensitive": {
+      "description": "Whether the post has sensitive (NSFW) content or not.",
+      "type": "boolean"
+    }
+  },
+  "required": ["id", "title", "content", "author", "community", "published"]
+}
