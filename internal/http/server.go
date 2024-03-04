@@ -52,7 +52,7 @@ func (server *Server) RunServer() {
 	server.Router.Use(server.logMiddleware)
 
 	srv := &http.Server{
-		Addr: "0.0.0.0:8080",
+		Addr: "0.0.0.0:3000",
 		// Good practice to set timeouts to avoid Slowloris attacks.
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,

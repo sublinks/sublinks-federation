@@ -17,18 +17,20 @@ type Queue interface {
 
 type RabbitQueue struct {
 	*amqp.Connection
-	publishers  map[string]*publisher
-	consumers   map[string]<-chan amqp.Delivery
-	routingKeys []string
-	logger      *log.Log
+	exchangeName string
+	publishers   map[string]*publisher
+	consumers    map[string]<-chan amqp.Delivery
+	routingKeys  []string
+	logger       *log.Log
 }
 
-func NewQueue(logger *log.Log, routingKeys []string) Queue {
+func NewQueue(logger *log.Log, routingKeys []string, exchangeName string) Queue {
 	return &RabbitQueue{
-		logger:      logger,
-		publishers:  make(map[string]*publisher),
-		consumers:   make(map[string]<-chan amqp.Delivery),
-		routingKeys: routingKeys,
+		logger:       logger,
+		publishers:   make(map[string]*publisher),
+		consumers:    make(map[string]<-chan amqp.Delivery),
+		exchangeName: exchangeName,
+		routingKeys:  routingKeys,
 	}
 }
 

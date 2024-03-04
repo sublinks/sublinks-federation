@@ -2,17 +2,18 @@ package queue
 
 import (
 	"errors"
+	"fmt"
 )
 
-func (q *RabbitQueue) createConsumer(queueName string, exchangeName string) error {
+func (q *RabbitQueue) createConsumer(queueName string) error {
 	channelRabbitMQ, err := q.Connection.Channel()
 	if err != nil {
 		return err
 	}
 
 	err = channelRabbitMQ.ExchangeDeclare(
-		exchangeName,
-		"topic",
+		q.exchangeName,
+		"direct",
 		true,
 		false,
 		false,
@@ -23,13 +24,13 @@ func (q *RabbitQueue) createConsumer(queueName string, exchangeName string) erro
 		return err
 	}
 
-	for _, key := range q.routingKeys {
-		err = q.createQueue(channelRabbitMQ, queueName)
-		if err != nil {
-			return err
-		}
+	err = q.createQueue(channelRabbitMQ, queueName)
+	if err != nil {
+		return err
+	}
 
-		err = channelRabbitMQ.QueueBind(queueName, key, exchangeName, false, nil)
+	for _, key := range q.routingKeys {
+		err = channelRabbitMQ.QueueBind(queueName, key, q.exchangeName, false, nil)
 		if err != nil {
 			return err
 		}
@@ -55,8 +56,8 @@ func (q *RabbitQueue) createConsumer(queueName string, exchangeName string) erro
 }
 
 // TODO: Implement a way to either pass a callback function or return messages/chan
-func (q *RabbitQueue) StartConsumer(queueName string, exchangeName string) error {
-	err := q.createConsumer(queueName, exchangeName)
+func (q *RabbitQueue) StartConsumer(queueName string) error {
+	err := q.createConsumer(queueName)
 	if err != nil {
 		return err
 	}
@@ -68,7 +69,12 @@ func (q *RabbitQueue) StartConsumer(queueName string, exchangeName string) error
 
 	go func() {
 		for message := range messages {
-			q.logger.Printf(" > Received message: %s\n", message.Body)
+			switch message.RoutingKey {
+			case "actor.created":
+				q.logger.Printf(" > Received message: %s\n", message.Body)
+			default:
+				q.logger.Warn(fmt.Sprintf("%s is not a valid routing key", message.RoutingKey))
+			}
 		}
 	}()
 
