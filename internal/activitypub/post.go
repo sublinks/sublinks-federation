@@ -2,7 +2,7 @@ package activitypub
 
 import (
 	"fmt"
-	"sublinks/sublinks-federation/internal/lemmy"
+	"sublinks/sublinks-federation/internal/model"
 	"time"
 )
 
@@ -11,7 +11,7 @@ type Language struct {
 	Name       string `json:"name"`       // "Français"
 }
 
-type Post struct {
+type Page struct {
 	Context         *Context  `json:"@context,omitempty"`
 	Id              string    `json:"id"`
 	Type            string    `json:"type"`
@@ -31,8 +31,8 @@ type Post struct {
 	Published       time.Time `json:"published"`
 }
 
-func NewPost(postUrl string, fromUser string, communityUrl string, postTitle string, postBody string, nsfw bool, published time.Time) *Post {
-	return &Post{
+func NewPage(postUrl string, fromUser string, communityUrl string, postTitle string, postBody string, nsfw bool, published time.Time) *Page {
+	return &Page{
 		Id:           postUrl,
 		Type:         "Page",
 		AttributedTo: fromUser,
@@ -58,14 +58,14 @@ func NewPost(postUrl string, fromUser string, communityUrl string, postTitle str
 	}
 }
 
-func ConvertPostToApub(p *lemmy.PostResponse) *Post {
-	return NewPost(
-		p.PostView.Post.ApId,
-		fmt.Sprintf("https://demo.sublinks.org/u/%s", p.PostView.Creator.Name),
-		p.CommunityView.Community.ActorId,
-		p.PostView.Post.Name,
-		p.PostView.Post.Body,
-		p.PostView.Post.Nsfw,
-		p.PostView.Post.Published,
+func ConvertPostToPage(p *model.Post) *Page {
+	return NewPage(
+		p.Id,
+		p.Author,
+		p.Community,
+		p.Title,
+		p.Content,
+		p.Nsfw,
+		p.Published,
 	)
 }

@@ -1,0 +1,50 @@
+{
+  "$id": "https://sublinks.org/actor.schema.json",
+  "title": "Actor",
+  "description": "A user or community that is part of the Sublinks ecosystem.",
+  "type": "object",
+  "properties": {
+    "actor_type": {
+      "description": "The type of actor. Use 'Person' for a user and 'Group' for a community.",
+      "type": "string",
+      "enum": ["Person", "Group"]
+    },
+    "id": {
+      "description": "The unique identifier for the actor.",
+      "type": "string"
+    },
+    "name": {
+      "description": "The display name of the actor.",
+      "type": "string"
+    },
+    "username": {
+      "description": "The username of the actor.",
+      "type": "string"
+    },
+    "bio": {
+      "description": "A bio of the actor (bio for person, summary for community/group).",
+      "type": "string"
+    },
+    "avatar": {
+      "description": "The URL of the actor's avatar.",
+      "type": "string"
+    },
+    "matrix_user_id": {
+      "description": "The Matrix user ID of the actor.",
+      "type": "string"
+    },
+    "public_key": {
+      "description": "The public key of the actor.",
+      "type": "string"
+    },
+    "private_key": {
+      "description": "The private key of the actor.",
+      "type": "string"
+    },
+    "sensitive": {
+      "description": "Whether the actor has sensitive (NSFW) content or not.",
+      "type": "boolean"
+    }
+  },
+  "required": ["id", "public_key", "private_key", "actor_type", "name", "username"]
+}

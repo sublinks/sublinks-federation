@@ -3,10 +3,11 @@ package log
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/rs/zerolog"
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/rs/zerolog"
 )
 
 type Logger interface {

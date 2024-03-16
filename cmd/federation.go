@@ -25,7 +25,6 @@ func main() {
 	if err != nil {
 		logger.Fatal("failed connecting to db", err)
 	}
-	defer conn.Close()
 	conn.RunMigrations()
 
 	q := queue.NewQueue(logger)
@@ -34,10 +33,7 @@ func main() {
 		logger.Fatal("failed connecting to queue service", err)
 	}
 	defer q.Close()
-	err = q.StartConsumer("federation")
-	if err != nil {
-		logger.Fatal("failed starting to consumer", err)
-	}
+	q.Run(conn)
 	config := http.ServerConfig{
 		Logger:   logger,
 		Database: conn,

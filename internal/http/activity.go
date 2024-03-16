@@ -1,12 +1,11 @@
 package http
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"sublinks/sublinks-federation/internal/activitypub"
-	"sublinks/sublinks-federation/internal/lemmy"
+	"sublinks/sublinks-federation/internal/model"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -53,13 +52,12 @@ func (server *Server) getActivityHandler(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-func (server *Server) GetPostActivityObject(id string) (*activitypub.Post, error) {
-	ctx := context.Background()
-	c := lemmy.GetLemmyClient(ctx)
-	post, err := c.GetPost(ctx, id)
+func (server *Server) GetPostActivityObject(id string) (*activitypub.Page, error) {
+	post := model.Post{UrlStub: id}
+	err := server.Database.Find(&post)
 	if err != nil {
 		server.Logger.Error("Error reading post", err)
 		return nil, err
 	}
-	return activitypub.ConvertPostToApub(post), nil
+	return activitypub.ConvertPostToPage(&post), nil
 }
