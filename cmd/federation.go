@@ -28,21 +28,27 @@ func main() {
 	defer conn.Close()
 	conn.RunMigrations()
 
-	q := queue.NewQueue(logger)
+	routingKeys := []string{
+		"actor.created",
+	}
+	q := queue.NewQueue(logger, routingKeys, "federation")
 	err = q.Connect()
 	if err != nil {
 		logger.Fatal("failed connecting to queue service", err)
 	}
 	defer q.Close()
+
 	err = q.StartConsumer("federation")
 	if err != nil {
 		logger.Fatal("failed starting to consumer", err)
 	}
+
 	config := http.ServerConfig{
 		Logger:   logger,
 		Database: conn,
 		Queue:    q,
 	}
+
 	s := http.NewServer(config)
 	s.RunServer()
 }
