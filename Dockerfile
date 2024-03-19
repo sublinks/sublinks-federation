@@ -1,6 +1,13 @@
 FROM golang:1.22.1
 
-COPY federation /app/
+COPY . /src/
+
+WORKDIR /app
+RUN cd /src \
+    && go mod download \
+    && go build -o /app/federation /src/cmd/federation.go \
+    && cd /app \
+    && rm -rf /src
 
 EXPOSE 8080
 
