@@ -16,6 +16,7 @@ type Queue interface {
 	Run(conn db.Database)
 	PublishMessage(queueName string, message string) error
 	StartConsumer(queueData ConsumerQueue, worker worker.Worker) error
+	Status() map[string]map[string]bool
 	Close()
 }
 
@@ -32,6 +33,21 @@ func NewQueue(logger *log.Log) Queue {
 		publishers: make(map[string]*publisher),
 		consumers:  make(map[string]<-chan amqp.Delivery),
 	}
+}
+
+func (q *RabbitQueue) Status() map[string]map[string]bool {
+	status := make(map[string]map[string]bool)
+	publisherStatus := make(map[string]bool)
+	consumerStatus := make(map[string]bool)
+	for publisherName, publisher := range q.publishers {
+		publisherStatus[publisherName] = !publisher.IsClosed()
+	}
+	status["publishers"] = publisherStatus
+	for consumerName, consumer := range q.consumers {
+		consumerStatus[consumerName] = consumer != nil
+	}
+	status["consumers"] = consumerStatus
+	return status
 }
 
 func (q *RabbitQueue) Run(conn db.Database) {
