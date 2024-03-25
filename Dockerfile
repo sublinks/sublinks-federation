@@ -1,4 +1,6 @@
 FROM golang:1.22.1
+LABEL maintainer="Sublinks Core Developers <hello@sublinks.org>"
+LABEL description="Federation service for Sublinks"
 
 COPY . /src/
 
