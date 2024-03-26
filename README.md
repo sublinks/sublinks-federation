@@ -24,11 +24,20 @@ Please post any feature requests or bug reports in the repository's [Issues sect
 - Install [pre-commit](https://pre-commit.com/#installation)
 - `pre-commit install`
 
+### Docker Setup (for dependencies)
+
+To use this Docker setup you first need to complete a few steps:
+
+- Authenticate towards GitHub's container registry(GHCR)
+  - Please follow [this guide](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic) to create an access token and authenticate before running the below command.
+- Run `git submodule update --init --recursive` to pull down all submodules
+- docker-compose -f docker/docker-compose.federation.yaml up [-d]
+  - -d to run in detached mode (don't include the [] brackets, they indicate being optional)
+
 ### Run
 
 - Copy .env-sample to .env
 - Replace values in .env file
-- docker compose -f docker-compose-dev.yaml up -d
 - Run `go run ./cmd/`
 - Open [localhost:8080](http://localhost:8080/)
 

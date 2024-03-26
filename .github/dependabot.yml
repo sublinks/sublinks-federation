@@ -16,6 +16,17 @@ updates:
     schedule:
       interval: "weekly"
   # Maintain dependencies for Docker
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    groups:
+       docker:
+          # Define patterns to include dependencies in the group (based on
+          # dependency name)
+          patterns:
+            - "*"       # A wildcard that matches all dependencies in the package
+                        # ecosystem. Note: using "*" may open a large pull request
+    schedule:
+      interval: "daily" # Change this to weekly some time in the future when things settle down
   - package-ecosystem: "docker"
     directory: "/"
     groups:
