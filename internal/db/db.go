@@ -11,6 +11,7 @@ import (
 
 type Database interface {
 	Connect() error
+	Ping() bool
 	RunMigrations()
 	Find(interface{}, ...interface{}) error
 	Save(interface{}) error
@@ -19,6 +20,10 @@ type Database interface {
 func (db *PostgresDB) Find(data interface{}, conds ...interface{}) error {
 	db.tx = db.DB.Find(data, conds)
 	return db.tx.Error
+}
+
+func (db *PostgresDB) Ping() bool {
+	return db.DB.Exec("SELECT 1").Error == nil
 }
 
 type PostgresDB struct {
