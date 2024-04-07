@@ -1,6 +1,6 @@
 module sublinks/sublinks-federation
 
-go 1.22.1
+go 1.22.2
 
 require (
 	github.com/golang-migrate/migrate/v4 v4.17.0
