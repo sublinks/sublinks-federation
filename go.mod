@@ -10,7 +10,7 @@ require (
 	github.com/rs/zerolog v1.32.0
 	golang.org/x/text v0.14.0
 	gorm.io/driver/mysql v1.5.6
-	gorm.io/gorm v1.25.8
+	gorm.io/gorm v1.25.9
 )
 
 require (
