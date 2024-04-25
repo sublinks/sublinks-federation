@@ -1,12 +1,15 @@
 package db
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"time"
 
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 type Database interface {
@@ -17,31 +20,42 @@ type Database interface {
 	Save(interface{}) error
 }
 
-func (db *PostgresDB) Find(data interface{}, conds ...interface{}) error {
+func (db *FederationDB) Find(data interface{}, conds ...interface{}) error {
 	db.tx = db.DB.Find(data, conds)
 	return db.tx.Error
 }
 
-func (db *PostgresDB) Ping() bool {
+func (db *FederationDB) Ping() bool {
 	return db.DB.Exec("SELECT 1").Error == nil
 }
 
-type PostgresDB struct {
+type FederationDB struct {
 	*gorm.DB
 	tx *gorm.DB
 }
 
 func NewDatabase() Database {
-	return &PostgresDB{}
+	return &FederationDB{}
 }
 
-func (d *PostgresDB) Save(data interface{}) error {
+func (d *FederationDB) Save(data interface{}) error {
 	db := d.DB.Save(data)
 	return db.Error
 }
 
-func (d *PostgresDB) Connect() error {
-	database, err := gorm.Open(mysql.Open(os.Getenv("DB_DSN")), &gorm.Config{})
+func (d *FederationDB) Connect() error {
+	var database *gorm.DB
+	var err error
+	if os.Getenv("DB_TYPE") == "postgres" {
+		database, err = gorm.Open(postgres.Open(os.Getenv("DB_DSN")), &gorm.Config{
+			NamingStrategy: schema.NamingStrategy{
+				TablePrefix:   fmt.Sprintf("%s.", os.Getenv("DB_SCHEMA")), // schema name
+				SingularTable: false,
+			},
+		})
+	} else {
+		database, err = gorm.Open(mysql.Open(os.Getenv("DB_DSN")), &gorm.Config{})
+	}
 	if err != nil {
 		return err
 	}

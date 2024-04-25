@@ -7,7 +7,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func (d *PostgresDB) RunMigrations() {
+func (d *FederationDB) RunMigrations() {
 	logger := log.NewLogger("db migrations")
 	logger.Debug("Running migrations...")
 	err := d.DB.AutoMigrate(&model.Actor{}, &model.Post{})
