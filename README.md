@@ -2,7 +2,7 @@
 
 This is the Federation service for the Sublinks project. It's built using Go.
 
-Together with the [Sublinks Core](https://github.com/sublinks/sublinks) and [Sublinks Frontend](https://github.com/sublinks/sublinks-frontend) it's creating a federated link aggregation and microblogging platform.
+Together with the [Sublinks Core](https://github.com/sublinks/sublinks-api) and [Sublinks Frontend](https://github.com/sublinks/sublinks-frontend) it's creating a federated link aggregation and microblogging platform.
 
 ## Contributing
 
