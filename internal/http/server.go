@@ -9,6 +9,7 @@ import (
 	"sublinks/sublinks-federation/internal/db"
 	"sublinks/sublinks-federation/internal/log"
 	"sublinks/sublinks-federation/internal/queue"
+	"sublinks/sublinks-federation/internal/service"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -19,12 +20,14 @@ type Server struct {
 	log.Logger
 	db.Database
 	queue.Queue
+	Services map[string]service.Service
 }
 
 type ServerConfig struct {
 	log.Logger
 	db.Database
 	queue.Queue
+	Services map[string]service.Service
 }
 
 func NewServer(config ServerConfig) *Server {
@@ -35,6 +38,7 @@ func NewServer(config ServerConfig) *Server {
 		Logger:   config.Logger,
 		Database: config.Database,
 		Queue:    config.Queue,
+		Services: config.Services,
 	}
 }
 

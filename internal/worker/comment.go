@@ -2,16 +2,17 @@ package worker
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"strings"
 	"sublinks/sublinks-federation/internal/log"
 	"sublinks/sublinks-federation/internal/model"
-	"sublinks/sublinks-federation/internal/repository"
+	"sublinks/sublinks-federation/internal/service/comments"
 )
 
 type CommentWorker struct {
 	log.Logger
-	repository.Repository
+	Service comments.CommentService
 }
 
 func (w *CommentWorker) Process(msg []byte) error {
@@ -23,10 +24,9 @@ func (w *CommentWorker) Process(msg []byte) error {
 		w.Logger.Error("Error unmarshalling comment: %s", err)
 		return err
 	}
-	err = w.Repository.Save(comment)
-	if err != nil {
-		w.Logger.Error("Error saving comment: %s", err)
-		return err
+	if !w.Service.Save(&comment) {
+		w.Logger.Error("Error saving comment", nil)
+		return errors.New("Error saving comment")
 	}
 	return nil
 }

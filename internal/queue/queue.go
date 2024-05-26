@@ -2,17 +2,19 @@ package queue
 
 import (
 	"os"
-	"sublinks/sublinks-federation/internal/repository"
+	"sublinks/sublinks-federation/internal/log"
+	"sublinks/sublinks-federation/internal/service"
+	"sublinks/sublinks-federation/internal/service/actors"
+	"sublinks/sublinks-federation/internal/service/comments"
+	"sublinks/sublinks-federation/internal/service/posts"
 	"sublinks/sublinks-federation/internal/worker"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	"sublinks/sublinks-federation/internal/db"
-	"sublinks/sublinks-federation/internal/log"
 )
 
 type Queue interface {
 	Connect() error
-	Run(conn db.Database)
+	Run(services map[string]service.Service)
 	PublishMessage(queueName string, message string) error
 	StartConsumer(queueData ConsumerQueue) error
 	Status() map[string]map[string]bool
@@ -49,19 +51,19 @@ func (q *RabbitQueue) Status() map[string]map[string]bool {
 	return status
 }
 
-func (q *RabbitQueue) Run(conn db.Database) {
-	q.processActors(conn)
-	q.processObjects(conn)
+func (q *RabbitQueue) Run(services map[string]service.Service) {
+	q.processActors(services)
+	q.processObjects(services)
 }
 
-func (q *RabbitQueue) processActors(conn db.Database) {
+func (q *RabbitQueue) processActors(services map[string]service.Service) {
 	actorCQ := ConsumerQueue{
 		QueueName: "actor_create_queue",
 		Exchange:  "federation",
 		RoutingKeys: map[string]worker.Worker{
 			ActorRoutingKey: &worker.ActorWorker{
-				Logger:     q.logger,
-				Repository: repository.NewRepository(conn),
+				Logger:  q.logger,
+				Service: services["actors"].(actors.ActorService),
 			},
 		},
 	}
@@ -72,18 +74,18 @@ func (q *RabbitQueue) processActors(conn db.Database) {
 	}
 }
 
-func (q *RabbitQueue) processObjects(conn db.Database) {
+func (q *RabbitQueue) processObjects(services map[string]service.Service) {
 	queue := ConsumerQueue{
 		QueueName: "object_create_queue",
 		Exchange:  "federation",
 		RoutingKeys: map[string]worker.Worker{
 			PostRoutingKey: &worker.PostWorker{
-				Logger:     q.logger,
-				Repository: repository.NewRepository(conn),
+				Logger:  q.logger,
+				Service: services["posts"].(posts.PostService),
 			},
 			CommentRoutingKey: &worker.CommentWorker{
-				Logger:     q.logger,
-				Repository: repository.NewRepository(conn),
+				Logger:  q.logger,
+				Service: services["comments"].(comments.CommentService),
 			},
 		},
 	}

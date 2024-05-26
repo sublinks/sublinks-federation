@@ -2,14 +2,15 @@ package worker
 
 import (
 	"encoding/json"
+	"errors"
 	"sublinks/sublinks-federation/internal/log"
 	"sublinks/sublinks-federation/internal/model"
-	"sublinks/sublinks-federation/internal/repository"
+	"sublinks/sublinks-federation/internal/service/actors"
 )
 
 type ActorWorker struct {
 	log.Logger
-	repository.Repository
+	Service actors.ActorService
 }
 
 func (w *ActorWorker) Process(msg []byte) error {
@@ -19,10 +20,9 @@ func (w *ActorWorker) Process(msg []byte) error {
 		w.Logger.Error("Error unmarshalling actor", err)
 		return err
 	}
-	err = w.Repository.Save(&actor)
-	if err != nil {
-		w.Logger.Error("Error saving actor", err)
-		return err
+	if !w.Service.Save(&actor) {
+		w.Logger.Error("Error saving actor", nil)
+		return errors.New("Error saving actor")
 	}
 	return nil
 }

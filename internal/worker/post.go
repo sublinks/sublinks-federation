@@ -6,12 +6,12 @@ import (
 	"strings"
 	"sublinks/sublinks-federation/internal/log"
 	"sublinks/sublinks-federation/internal/model"
-	"sublinks/sublinks-federation/internal/repository"
+	"sublinks/sublinks-federation/internal/service/posts"
 )
 
 type PostWorker struct {
 	log.Logger
-	repository.Repository
+	Service posts.PostService
 }
 
 func (w *PostWorker) Process(msg []byte) error {
@@ -23,9 +23,9 @@ func (w *PostWorker) Process(msg []byte) error {
 		w.Logger.Error("Error unmarshalling post: %s", err)
 		return err
 	}
-	err = w.Repository.Save(post)
-	if err != nil {
-		w.Logger.Error("Error saving post: %s", err)
+	res := w.Service.Save(&post)
+	if !res {
+		w.Logger.Error("Error saving post", nil)
 		return err
 	}
 	return nil
