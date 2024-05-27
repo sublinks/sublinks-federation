@@ -47,7 +47,7 @@ jobs:
       run: go test -v ./...
 
     - name: Coverage
-      uses: gwatts/go-coverage-action@v2.0.0
+      uses: lazyguru/go-coverage-action@9b496d245c69f85ab8cef4ce57d857cc727506ee
       with:
         # Fail the build if the coverage drops below supplied percentage
         coverage-threshold: 0 # Change this as coverage improves
