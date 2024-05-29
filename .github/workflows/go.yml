@@ -47,14 +47,14 @@ jobs:
       run: go test -v ./...
 
     - name: Coverage
-      uses: gwatts/go-coverage-action@v2.0.0
+      uses: lazyguru/go-coverage-action@9b496d245c69f85ab8cef4ce57d857cc727506ee
       with:
         # Fail the build if the coverage drops below supplied percentage
         coverage-threshold: 0 # Change this as coverage improves
         # Fail the build if coverage drops below coverage-threshold.  One of "always", "never" or "only_pull_requests"
         fail-coverage: only_pull_requests
         # Adds a comment to the PR with coverage information if true. If false will only add an action summary report
-        add-comment: true
+        add-comment: false
         # One or more regular expressions matching filenames to exclude from coverage statistics (e.g. for generated Go files)
         #ignore-pattern:
 
