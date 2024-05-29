@@ -6,11 +6,6 @@ import (
 	"time"
 )
 
-type Language struct {
-	Identifier string `json:"identifier"` // "fr",
-	Name       string `json:"name"`       // "Français"
-}
-
 type Page struct {
 	Context         *Context  `json:"@context,omitempty"`
 	Id              string    `json:"id"`
