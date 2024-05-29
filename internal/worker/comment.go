@@ -20,12 +20,12 @@ func (w *CommentWorker) Process(msg []byte) error {
 	hostname := os.Getenv("HOSTNAME")
 	comment.UrlStub = strings.Replace(hostname, comment.Id, "", 1)
 	if err != nil {
-		w.Logger.Error("Error unmarshalling post: %s", err)
+		w.Logger.Error("Error unmarshalling comment: %s", err)
 		return err
 	}
 	err = w.Repository.Save(comment)
 	if err != nil {
-		w.Logger.Error("Error saving post: %s", err)
+		w.Logger.Error("Error saving comment: %s", err)
 		return err
 	}
 	return nil
