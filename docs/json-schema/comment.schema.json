@@ -24,7 +24,7 @@
       "description": "The date and time the comment was published.",
       "type": "string"
     },
-    "sensitive": {
+    "nsfw": {
       "description": "Whether the comment has sensitive (NSFW) content or not.",
       "type": "boolean"
     }
