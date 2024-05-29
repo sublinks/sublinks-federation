@@ -53,6 +53,7 @@ func (q *RabbitQueue) Status() map[string]map[string]bool {
 func (q *RabbitQueue) Run(conn db.Database) {
 	q.processActors(conn)
 	q.processPosts(conn)
+	q.processComments(conn)
 }
 
 func (q *RabbitQueue) processActors(conn db.Database) {
@@ -88,6 +89,24 @@ func (q *RabbitQueue) processPosts(conn db.Database) {
 	err := q.StartConsumer(postCQ, &aw)
 	if err != nil {
 		q.logger.Fatal("failed starting post consumer", err)
+	}
+}
+
+func (q *RabbitQueue) processComments(conn db.Database) {
+	postCQ := ConsumerQueue{
+		QueueName:  "comment_queue",
+		Exchange:   "federation",
+		RoutingKey: "comment.create",
+	}
+
+	aw := worker.CommentWorker{
+		Logger:     q.logger,
+		Repository: repository.NewRepository(conn),
+	}
+
+	err := q.StartConsumer(postCQ, &aw)
+	if err != nil {
+		q.logger.Fatal("failed starting comment consumer", err)
 	}
 }
 
