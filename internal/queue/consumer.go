@@ -2,8 +2,16 @@ package queue
 
 import (
 	"errors"
+	"sublinks/sublinks-federation/internal/db"
+	"sublinks/sublinks-federation/internal/repository"
 	"sublinks/sublinks-federation/internal/worker"
 )
+
+type ConsumerQueue struct {
+	Exchange    string
+	QueueName   string
+	RoutingKeys []string
+}
 
 func (q *RabbitQueue) createConsumer(queueData ConsumerQueue) error {
 	channelRabbitMQ, err := q.Connection.Channel()
@@ -14,14 +22,17 @@ func (q *RabbitQueue) createConsumer(queueData ConsumerQueue) error {
 	if err != nil {
 		return err
 	}
-	err = channelRabbitMQ.QueueBind(
-		queueData.QueueName,  // queue name
-		queueData.RoutingKey, // routing key
-		queueData.Exchange,   // exchange
-		false,
-		nil)
-	if err != nil {
-		return err
+
+	for _, routingKey := range queueData.RoutingKeys {
+		err = channelRabbitMQ.QueueBind(
+			queueData.QueueName, // queue name
+			routingKey,          // routing key
+			queueData.Exchange,  // exchange
+			false,
+			nil)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Subscribing to QueueService1 for getting messages.
@@ -41,14 +52,8 @@ func (q *RabbitQueue) createConsumer(queueData ConsumerQueue) error {
 	return nil
 }
 
-type ConsumerQueue struct {
-	Exchange   string
-	QueueName  string
-	RoutingKey string
-}
-
 // TODO: Implement a way to either pass a callback function or return messages/chan
-func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue, worker worker.Worker) error {
+func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue, conn db.Database) error {
 	err := q.createConsumer(queueData)
 	if err != nil {
 		return err
@@ -59,17 +64,63 @@ func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue, worker worker.Worke
 	}
 	go func() {
 		for message := range messages {
-			err := worker.Process(message.Body)
-			if err != nil {
-				err = message.Acknowledger.Nack(message.DeliveryTag, false, true)
+			switch message.RoutingKey {
+			case ActorRoutingKey:
+				aw := worker.ActorWorker{
+					Logger:     q.logger,
+					Repository: repository.NewRepository(conn),
+				}
+
+				err = aw.Process(message.Body)
+				if err != nil {
+					err = message.Acknowledger.Nack(message.DeliveryTag, false, true)
+					if err != nil {
+						panic(err) // I know this isn't good. Will need to fix it
+					}
+					continue
+				}
+				err = message.Acknowledger.Ack(message.DeliveryTag, false)
 				if err != nil {
 					panic(err) // I know this isn't good. Will need to fix it
 				}
-				continue
-			}
-			err = message.Acknowledger.Ack(message.DeliveryTag, false)
-			if err != nil {
-				panic(err) // I know this isn't good. Will need to fix it
+			case CommentRoutingKey:
+				aw := worker.CommentWorker{
+					Logger:     q.logger,
+					Repository: repository.NewRepository(conn),
+				}
+
+				err = aw.Process(message.Body)
+				if err != nil {
+					err = message.Acknowledger.Nack(message.DeliveryTag, false, true)
+					if err != nil {
+						panic(err) // I know this isn't good. Will need to fix it
+					}
+					continue
+				}
+				err = message.Acknowledger.Ack(message.DeliveryTag, false)
+				if err != nil {
+					panic(err) // I know this isn't good. Will need to fix it
+				}
+			case PostRoutingKey:
+				aw := worker.PostWorker{
+					Logger:     q.logger,
+					Repository: repository.NewRepository(conn),
+				}
+
+				err = aw.Process(message.Body)
+				if err != nil {
+					err = message.Acknowledger.Nack(message.DeliveryTag, false, true)
+					if err != nil {
+						panic(err) // I know this isn't good. Will need to fix it
+					}
+					continue
+				}
+				err = message.Acknowledger.Ack(message.DeliveryTag, false)
+				if err != nil {
+					panic(err) // I know this isn't good. Will need to fix it
+				}
+			default:
+				q.logger.Warn("Received unknown routing key")
 			}
 		}
 	}()
