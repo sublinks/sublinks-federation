@@ -2,15 +2,13 @@ package queue
 
 import (
 	"errors"
-	"sublinks/sublinks-federation/internal/db"
-	"sublinks/sublinks-federation/internal/repository"
 	"sublinks/sublinks-federation/internal/worker"
 )
 
 type ConsumerQueue struct {
 	Exchange    string
 	QueueName   string
-	RoutingKeys []string
+	RoutingKeys map[string]worker.Worker
 }
 
 func (q *RabbitQueue) createConsumer(queueData ConsumerQueue) error {
@@ -23,7 +21,7 @@ func (q *RabbitQueue) createConsumer(queueData ConsumerQueue) error {
 		return err
 	}
 
-	for _, routingKey := range queueData.RoutingKeys {
+	for routingKey, _ := range queueData.RoutingKeys {
 		err = channelRabbitMQ.QueueBind(
 			queueData.QueueName, // queue name
 			routingKey,          // routing key
@@ -52,8 +50,7 @@ func (q *RabbitQueue) createConsumer(queueData ConsumerQueue) error {
 	return nil
 }
 
-// TODO: Implement a way to either pass a callback function or return messages/chan
-func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue, conn db.Database) error {
+func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue) error {
 	err := q.createConsumer(queueData)
 	if err != nil {
 		return err
@@ -64,63 +61,19 @@ func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue, conn db.Database) e
 	}
 	go func() {
 		for message := range messages {
-			switch message.RoutingKey {
-			case ActorRoutingKey:
-				aw := worker.ActorWorker{
-					Logger:     q.logger,
-					Repository: repository.NewRepository(conn),
-				}
+			cbWorker := queueData.RoutingKeys[message.RoutingKey]
+			err := cbWorker.Process(message.Body)
 
-				err = aw.Process(message.Body)
-				if err != nil {
-					err = message.Acknowledger.Nack(message.DeliveryTag, false, true)
-					if err != nil {
-						panic(err) // I know this isn't good. Will need to fix it
-					}
-					continue
-				}
-				err = message.Acknowledger.Ack(message.DeliveryTag, false)
+			if err != nil {
+				err = message.Acknowledger.Nack(message.DeliveryTag, false, true)
 				if err != nil {
 					panic(err) // I know this isn't good. Will need to fix it
 				}
-			case CommentRoutingKey:
-				aw := worker.CommentWorker{
-					Logger:     q.logger,
-					Repository: repository.NewRepository(conn),
-				}
-
-				err = aw.Process(message.Body)
-				if err != nil {
-					err = message.Acknowledger.Nack(message.DeliveryTag, false, true)
-					if err != nil {
-						panic(err) // I know this isn't good. Will need to fix it
-					}
-					continue
-				}
-				err = message.Acknowledger.Ack(message.DeliveryTag, false)
-				if err != nil {
-					panic(err) // I know this isn't good. Will need to fix it
-				}
-			case PostRoutingKey:
-				aw := worker.PostWorker{
-					Logger:     q.logger,
-					Repository: repository.NewRepository(conn),
-				}
-
-				err = aw.Process(message.Body)
-				if err != nil {
-					err = message.Acknowledger.Nack(message.DeliveryTag, false, true)
-					if err != nil {
-						panic(err) // I know this isn't good. Will need to fix it
-					}
-					continue
-				}
-				err = message.Acknowledger.Ack(message.DeliveryTag, false)
-				if err != nil {
-					panic(err) // I know this isn't good. Will need to fix it
-				}
-			default:
-				q.logger.Warn("Received unknown routing key")
+				continue
+			}
+			err = message.Acknowledger.Ack(message.DeliveryTag, false)
+			if err != nil {
+				panic(err) // I know this isn't good. Will need to fix it
 			}
 		}
 	}()

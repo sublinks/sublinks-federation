@@ -2,6 +2,8 @@ package queue
 
 import (
 	"os"
+	"sublinks/sublinks-federation/internal/repository"
+	"sublinks/sublinks-federation/internal/worker"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"sublinks/sublinks-federation/internal/db"
@@ -12,7 +14,7 @@ type Queue interface {
 	Connect() error
 	Run(conn db.Database)
 	PublishMessage(queueName string, message string) error
-	StartConsumer(queueData ConsumerQueue, conn db.Database) error
+	StartConsumer(queueData ConsumerQueue) error
 	Status() map[string]map[string]bool
 	Close()
 }
@@ -54,12 +56,17 @@ func (q *RabbitQueue) Run(conn db.Database) {
 
 func (q *RabbitQueue) processActors(conn db.Database) {
 	actorCQ := ConsumerQueue{
-		QueueName:   "actor_create_queue",
-		Exchange:    "federation",
-		RoutingKeys: []string{"actor.create"},
+		QueueName: "actor_create_queue",
+		Exchange:  "federation",
+		RoutingKeys: map[string]worker.Worker{
+			ActorRoutingKey: &worker.ActorWorker{
+				Logger:     q.logger,
+				Repository: repository.NewRepository(conn),
+			},
+		},
 	}
 
-	err := q.StartConsumer(actorCQ, conn)
+	err := q.StartConsumer(actorCQ)
 	if err != nil {
 		q.logger.Fatal("failed starting actor consumer", err)
 	}
@@ -67,12 +74,21 @@ func (q *RabbitQueue) processActors(conn db.Database) {
 
 func (q *RabbitQueue) processObjects(conn db.Database) {
 	queue := ConsumerQueue{
-		QueueName:   "object_create_queue",
-		Exchange:    "federation",
-		RoutingKeys: []string{"post.create", "comment.create"},
+		QueueName: "object_create_queue",
+		Exchange:  "federation",
+		RoutingKeys: map[string]worker.Worker{
+			PostRoutingKey: &worker.PostWorker{
+				Logger:     q.logger,
+				Repository: repository.NewRepository(conn),
+			},
+			CommentRoutingKey: &worker.CommentWorker{
+				Logger:     q.logger,
+				Repository: repository.NewRepository(conn),
+			},
+		},
 	}
 
-	err := q.StartConsumer(queue, conn)
+	err := q.StartConsumer(queue)
 	if err != nil {
 		q.logger.Fatal("failed starting object consumer", err)
 	}

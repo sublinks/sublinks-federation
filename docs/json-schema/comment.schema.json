@@ -16,8 +16,8 @@
       "description": "The content of the comment.",
       "type": "string"
     },
-    "author": {
-      "description": "The author of the comment.",
+    "author_id": {
+      "description": "The unique identifier for the actor that is the author of the comment. I.E. discuss.online/u/lazyguru",
       "type": "string"
     },
     "published": {
@@ -29,5 +29,5 @@
       "type": "boolean"
     }
   },
-  "required": ["id", "post", "content", "author", "published"]
+  "required": ["id", "post", "content", "author_id", "published"]
 }
