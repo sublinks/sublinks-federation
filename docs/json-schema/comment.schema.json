@@ -1,0 +1,33 @@
+{
+  "$id": "https://sublinks.org/comment.schema.json",
+  "title": "Comment",
+  "description": "A comment in a Sublinks Post attributable to an author.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "The unique identifier for the comment.",
+      "type": "string"
+    },
+    "post_id": {
+      "description": "The unique identifier of Post comment is for.",
+      "type": "string"
+    },
+    "content": {
+      "description": "The content of the comment.",
+      "type": "string"
+    },
+    "author_id": {
+      "description": "The unique identifier for the actor that is the author of the comment. I.E. discuss.online/u/lazyguru",
+      "type": "string"
+    },
+    "published": {
+      "description": "The date and time the comment was published.",
+      "type": "string"
+    },
+    "nsfw": {
+      "description": "Whether the comment has sensitive (NSFW) content or not.",
+      "type": "boolean"
+    }
+  },
+  "required": ["id", "post", "content", "author_id", "published"]
+}

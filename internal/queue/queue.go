@@ -2,20 +2,19 @@ package queue
 
 import (
 	"os"
-
-	"sublinks/sublinks-federation/internal/db"
-	"sublinks/sublinks-federation/internal/log"
 	"sublinks/sublinks-federation/internal/repository"
 	"sublinks/sublinks-federation/internal/worker"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"sublinks/sublinks-federation/internal/db"
+	"sublinks/sublinks-federation/internal/log"
 )
 
 type Queue interface {
 	Connect() error
 	Run(conn db.Database)
 	PublishMessage(queueName string, message string) error
-	StartConsumer(queueData ConsumerQueue, worker worker.Worker) error
+	StartConsumer(queueData ConsumerQueue) error
 	Status() map[string]map[string]bool
 	Close()
 }
@@ -52,42 +51,46 @@ func (q *RabbitQueue) Status() map[string]map[string]bool {
 
 func (q *RabbitQueue) Run(conn db.Database) {
 	q.processActors(conn)
-	q.processPosts(conn)
+	q.processObjects(conn)
 }
 
 func (q *RabbitQueue) processActors(conn db.Database) {
 	actorCQ := ConsumerQueue{
-		QueueName:  "actor_create_queue",
-		Exchange:   "federation",
-		RoutingKey: "actor.create",
+		QueueName: "actor_create_queue",
+		Exchange:  "federation",
+		RoutingKeys: map[string]worker.Worker{
+			ActorRoutingKey: &worker.ActorWorker{
+				Logger:     q.logger,
+				Repository: repository.NewRepository(conn),
+			},
+		},
 	}
 
-	aw := worker.ActorWorker{
-		Logger:     q.logger,
-		Repository: repository.NewRepository(conn),
-	}
-
-	err := q.StartConsumer(actorCQ, &aw)
+	err := q.StartConsumer(actorCQ)
 	if err != nil {
 		q.logger.Fatal("failed starting actor consumer", err)
 	}
 }
 
-func (q *RabbitQueue) processPosts(conn db.Database) {
-	postCQ := ConsumerQueue{
-		QueueName:  "post_queue",
-		Exchange:   "federation",
-		RoutingKey: "post.create",
+func (q *RabbitQueue) processObjects(conn db.Database) {
+	queue := ConsumerQueue{
+		QueueName: "object_create_queue",
+		Exchange:  "federation",
+		RoutingKeys: map[string]worker.Worker{
+			PostRoutingKey: &worker.PostWorker{
+				Logger:     q.logger,
+				Repository: repository.NewRepository(conn),
+			},
+			CommentRoutingKey: &worker.CommentWorker{
+				Logger:     q.logger,
+				Repository: repository.NewRepository(conn),
+			},
+		},
 	}
 
-	aw := worker.PostWorker{
-		Logger:     q.logger,
-		Repository: repository.NewRepository(conn),
-	}
-
-	err := q.StartConsumer(postCQ, &aw)
+	err := q.StartConsumer(queue)
 	if err != nil {
-		q.logger.Fatal("failed starting post consumer", err)
+		q.logger.Fatal("failed starting object consumer", err)
 	}
 }
 
