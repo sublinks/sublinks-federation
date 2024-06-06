@@ -75,14 +75,14 @@ func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue) error {
 			if err != nil {
 				err = message.Acknowledger.Nack(message.DeliveryTag, false, true)
 				if err != nil {
-					return errors.New(err.Error())
+					return errors.New(fmt.Sprintf("error nack'ing the message: %s", err.Error()))
 				}
-				return errors.New(err.Error())
+				return errors.New(fmt.Sprintf("error processing message body: %s", err.Error()))
 			}
 
 			err = message.Acknowledger.Ack(message.DeliveryTag, false)
 			if err != nil {
-				return errors.New(err.Error())
+				return errors.New(fmt.Sprintf("error ack'ing the message: %s", err.Error()))
 			}
 			return nil
 		})
