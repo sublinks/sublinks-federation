@@ -2,6 +2,8 @@ package queue
 
 import (
 	"errors"
+	"fmt"
+	"golang.org/x/sync/errgroup"
 	"sublinks/sublinks-federation/internal/worker"
 )
 
@@ -59,23 +61,36 @@ func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue) error {
 	if !ok {
 		return errors.New("consumer not found")
 	}
-	go func() {
-		for message := range messages {
-			cbWorker := queueData.RoutingKeys[message.RoutingKey]
+
+	errGroup := new(errgroup.Group)
+	for message := range messages {
+		errGroup.Go(func() error {
+			cbWorker, ok := queueData.RoutingKeys[message.RoutingKey]
+			if !ok {
+				return errors.New(fmt.Sprintf("%s not implemented as valid routing key", message.RoutingKey))
+			}
+
 			err := cbWorker.Process(message.Body)
 
 			if err != nil {
 				err = message.Acknowledger.Nack(message.DeliveryTag, false, true)
 				if err != nil {
-					panic(err) // I know this isn't good. Will need to fix it
+					return errors.New(err.Error())
 				}
-				continue
+				return errors.New(err.Error())
 			}
+
 			err = message.Acknowledger.Ack(message.DeliveryTag, false)
 			if err != nil {
-				panic(err) // I know this isn't good. Will need to fix it
+				return errors.New(err.Error())
 			}
-		}
-	}()
+			return nil
+		})
+	}
+
+	if err := errGroup.Wait(); err != nil {
+		return err
+	}
+
 	return nil
 }
