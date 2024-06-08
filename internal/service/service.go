@@ -1,19 +1,13 @@
 package service
 
-import (
-	"sublinks/sublinks-federation/internal/service/actors"
-	"sublinks/sublinks-federation/internal/service/comments"
-	"sublinks/sublinks-federation/internal/service/posts"
-)
-
 type ServiceManager struct {
-	userService      *actors.UserService
-	communityService *actors.CommunityService
-	postService      *posts.PostService
-	commentService   *comments.CommentService
+	userService      *UserService
+	communityService *CommunityService
+	postService      *PostService
+	commentService   *CommentService
 }
 
-func NewServiceManager(userService *actors.UserService, communityService *actors.CommunityService, postService *posts.PostService, commentService *comments.CommentService) *ServiceManager {
+func NewServiceManager(userService *UserService, communityService *CommunityService, postService *PostService, commentService *CommentService) *ServiceManager {
 	return &ServiceManager{
 		userService:      userService,
 		communityService: communityService,
@@ -22,18 +16,18 @@ func NewServiceManager(userService *actors.UserService, communityService *actors
 	}
 }
 
-func (sm *ServiceManager) GetCommunityService() *actors.CommunityService {
+func (sm *ServiceManager) GetCommunityService() *CommunityService {
 	return sm.communityService
 }
 
-func (sm *ServiceManager) GetPostService() *posts.PostService {
+func (sm *ServiceManager) GetPostService() *PostService {
 	return sm.postService
 }
 
-func (sm *ServiceManager) GetUserService() *actors.UserService {
+func (sm *ServiceManager) GetUserService() *UserService {
 	return sm.userService
 }
 
-func (sm *ServiceManager) GetCommentService() *comments.CommentService {
+func (sm *ServiceManager) GetCommentService() *CommentService {
 	return sm.commentService
 }

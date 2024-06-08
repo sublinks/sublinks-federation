@@ -7,15 +7,15 @@ import (
 	"strings"
 	"sublinks/sublinks-federation/internal/log"
 	"sublinks/sublinks-federation/internal/model"
-	"sublinks/sublinks-federation/internal/service/comments"
+	"sublinks/sublinks-federation/internal/service"
 )
 
 type CommentWorker struct {
 	log.Logger
-	service *comments.CommentService
+	service *service.CommentService
 }
 
-func NewCommentWorker(logger log.Logger, service *comments.CommentService) *CommentWorker {
+func NewCommentWorker(logger log.Logger, service *service.CommentService) *CommentWorker {
 	return &CommentWorker{
 		Logger:  logger,
 		service: service,

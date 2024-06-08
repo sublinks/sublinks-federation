@@ -1,4 +1,4 @@
-package comments
+package service
 
 import (
 	"sublinks/sublinks-federation/internal/db"

@@ -5,16 +5,16 @@ import (
 	"errors"
 	"sublinks/sublinks-federation/internal/log"
 	"sublinks/sublinks-federation/internal/model"
-	"sublinks/sublinks-federation/internal/service/actors"
+	"sublinks/sublinks-federation/internal/service"
 )
 
 type ActorWorker struct {
 	log.Logger
-	userService      *actors.UserService
-	communityService *actors.CommunityService
+	userService      *service.UserService
+	communityService *service.CommunityService
 }
 
-func NewActorWorker(logger log.Logger, userService *actors.UserService, communityService *actors.CommunityService) *ActorWorker {
+func NewActorWorker(logger log.Logger, userService *service.UserService, communityService *service.CommunityService) *ActorWorker {
 	return &ActorWorker{
 		Logger:           logger,
 		userService:      userService,

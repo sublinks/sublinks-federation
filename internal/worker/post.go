@@ -6,15 +6,15 @@ import (
 	"strings"
 	"sublinks/sublinks-federation/internal/log"
 	"sublinks/sublinks-federation/internal/model"
-	"sublinks/sublinks-federation/internal/service/posts"
+	"sublinks/sublinks-federation/internal/service"
 )
 
 type PostWorker struct {
 	log.Logger
-	service *posts.PostService
+	service *service.PostService
 }
 
-func NewPostWorker(logger log.Logger, service *posts.PostService) *PostWorker {
+func NewPostWorker(logger log.Logger, service *service.PostService) *PostWorker {
 	return &PostWorker{
 		Logger:  logger,
 		service: service,

@@ -1,4 +1,4 @@
-package actors
+package service
 
 import (
 	"sublinks/sublinks-federation/internal/db"

@@ -7,9 +7,6 @@ import (
 	"sublinks/sublinks-federation/internal/log"
 	"sublinks/sublinks-federation/internal/queue"
 	"sublinks/sublinks-federation/internal/service"
-	"sublinks/sublinks-federation/internal/service/actors"
-	"sublinks/sublinks-federation/internal/service/comments"
-	"sublinks/sublinks-federation/internal/service/posts"
 
 	"github.com/joho/godotenv"
 )
@@ -38,10 +35,10 @@ func main() {
 	}
 	defer q.Close()
 	serviceManager := service.NewServiceManager(
-		actors.NewUserService(conn),
-		actors.NewCommunityService(conn),
-		posts.NewPostService(conn),
-		comments.NewCommentService(conn),
+		service.NewUserService(conn),
+		service.NewCommunityService(conn),
+		service.NewPostService(conn),
+		service.NewCommentService(conn),
 	)
 	q.Run(serviceManager)
 	config := http.ServerConfig{
