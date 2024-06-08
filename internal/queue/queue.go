@@ -60,8 +60,8 @@ func (q *RabbitQueue) processActors(serviceManager *service.ServiceManager) {
 		RoutingKeys: map[string]worker.Worker{
 			ActorRoutingKey: worker.NewActorWorker(
 				q.logger,
-				serviceManager.GetUserService(),
-				serviceManager.GetCommunityService(),
+				serviceManager.UserService(),
+				serviceManager.CommunityService(),
 			),
 		},
 	}
@@ -79,11 +79,11 @@ func (q *RabbitQueue) processObjects(serviceManager *service.ServiceManager) {
 		RoutingKeys: map[string]worker.Worker{
 			PostRoutingKey: worker.NewPostWorker(
 				q.logger,
-				serviceManager.GetPostService(),
+				serviceManager.PostService(),
 			),
 			CommentRoutingKey: worker.NewCommentWorker(
 				q.logger,
-				serviceManager.GetCommentService(),
+				serviceManager.CommentService(),
 			),
 		},
 	}

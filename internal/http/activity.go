@@ -52,6 +52,6 @@ func (server *Server) getActivityHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (server *Server) GetPostActivityObject(id string) (*activitypub.Page, error) {
-	post := server.ServiceManager.GetPostService().GetById(id)
+	post := server.ServiceManager.PostService().GetById(id)
 	return activitypub.ConvertPostToPage(post), nil
 }

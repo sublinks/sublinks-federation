@@ -16,7 +16,7 @@ func (server *Server) SetupUserRoutes() {
 func (server *Server) getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	server.Logger.Info(fmt.Sprintf("Looking up user %s", vars["user"]))
-	user := server.ServiceManager.GetUserService().GetById(vars["user"])
+	user := server.ServiceManager.UserService().GetById(vars["user"])
 	if user == nil {
 		server.Logger.Error("User not found", nil)
 		w.WriteHeader(http.StatusNotFound)

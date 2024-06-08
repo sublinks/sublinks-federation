@@ -14,7 +14,7 @@ func (server *Server) SetupPostRoutes() {
 
 func (server *Server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	post := server.ServiceManager.GetPostService().GetById(vars["postId"])
+	post := server.ServiceManager.PostService().GetById(vars["postId"])
 	postLd := activitypub.ConvertPostToPage(post)
 	postLd.Context = activitypub.GetContext()
 	w.WriteHeader(http.StatusOK)

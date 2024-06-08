@@ -16,18 +16,18 @@ func NewServiceManager(userService *UserService, communityService *CommunityServ
 	}
 }
 
-func (sm *ServiceManager) GetCommunityService() *CommunityService {
+func (sm *ServiceManager) CommunityService() *CommunityService {
 	return sm.communityService
 }
 
-func (sm *ServiceManager) GetPostService() *PostService {
+func (sm *ServiceManager) PostService() *PostService {
 	return sm.postService
 }
 
-func (sm *ServiceManager) GetUserService() *UserService {
+func (sm *ServiceManager) UserService() *UserService {
 	return sm.userService
 }
 
-func (sm *ServiceManager) GetCommentService() *CommentService {
+func (sm *ServiceManager) CommentService() *CommentService {
 	return sm.commentService
 }
