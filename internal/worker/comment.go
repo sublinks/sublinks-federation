@@ -12,7 +12,14 @@ import (
 
 type CommentWorker struct {
 	log.Logger
-	Service comments.CommentService
+	service *comments.CommentService
+}
+
+func NewCommentWorker(logger log.Logger, service *comments.CommentService) *CommentWorker {
+	return &CommentWorker{
+		Logger:  logger,
+		service: service,
+	}
 }
 
 func (w *CommentWorker) Process(msg []byte) error {
@@ -24,7 +31,7 @@ func (w *CommentWorker) Process(msg []byte) error {
 		w.Logger.Error("Error unmarshalling comment: %s", err)
 		return err
 	}
-	if !w.Service.Save(&comment) {
+	if !w.service.Save(&comment) {
 		w.Logger.Error("Error saving comment", nil)
 		return errors.New("Error saving comment")
 	}

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"sublinks/sublinks-federation/internal/activitypub"
-	"sublinks/sublinks-federation/internal/service/posts"
 
 	"github.com/gorilla/mux"
 )
@@ -15,7 +14,7 @@ func (server *Server) SetupPostRoutes() {
 
 func (server *Server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	post := server.Services["posts"].(posts.PostService).FindPost(vars["postId"])
+	post := server.ServiceManager.GetPostService().GetById(vars["postId"])
 	postLd := activitypub.ConvertPostToPage(post)
 	postLd.Context = activitypub.GetContext()
 	w.WriteHeader(http.StatusOK)

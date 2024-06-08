@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"sublinks/sublinks-federation/internal/activitypub"
-	"sublinks/sublinks-federation/internal/service/posts"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -53,6 +52,6 @@ func (server *Server) getActivityHandler(w http.ResponseWriter, r *http.Request)
 }
 
 func (server *Server) GetPostActivityObject(id string) (*activitypub.Page, error) {
-	post := server.Services["posts"].(posts.PostService).FindPost(id)
+	post := server.ServiceManager.GetPostService().GetById(id)
 	return activitypub.ConvertPostToPage(post), nil
 }

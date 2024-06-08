@@ -4,9 +4,6 @@ import (
 	"os"
 	"sublinks/sublinks-federation/internal/log"
 	"sublinks/sublinks-federation/internal/service"
-	"sublinks/sublinks-federation/internal/service/actors"
-	"sublinks/sublinks-federation/internal/service/comments"
-	"sublinks/sublinks-federation/internal/service/posts"
 	"sublinks/sublinks-federation/internal/worker"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -14,7 +11,7 @@ import (
 
 type Queue interface {
 	Connect() error
-	Run(services map[string]service.Service)
+	Run(serviceManager *service.ServiceManager)
 	PublishMessage(queueName string, message string) error
 	StartConsumer(queueData ConsumerQueue) error
 	Status() map[string]map[string]bool
@@ -51,20 +48,21 @@ func (q *RabbitQueue) Status() map[string]map[string]bool {
 	return status
 }
 
-func (q *RabbitQueue) Run(services map[string]service.Service) {
-	q.processActors(services)
-	q.processObjects(services)
+func (q *RabbitQueue) Run(serviceManager *service.ServiceManager) {
+	q.processActors(serviceManager)
+	q.processObjects(serviceManager)
 }
 
-func (q *RabbitQueue) processActors(services map[string]service.Service) {
+func (q *RabbitQueue) processActors(serviceManager *service.ServiceManager) {
 	actorCQ := ConsumerQueue{
 		QueueName: "actor_create_queue",
 		Exchange:  "federation",
 		RoutingKeys: map[string]worker.Worker{
-			ActorRoutingKey: &worker.ActorWorker{
-				Logger:  q.logger,
-				Service: services["actors"].(actors.ActorService),
-			},
+			ActorRoutingKey: worker.NewActorWorker(
+				q.logger,
+				serviceManager.GetUserService(),
+				serviceManager.GetCommunityService(),
+			),
 		},
 	}
 
@@ -74,19 +72,19 @@ func (q *RabbitQueue) processActors(services map[string]service.Service) {
 	}
 }
 
-func (q *RabbitQueue) processObjects(services map[string]service.Service) {
+func (q *RabbitQueue) processObjects(serviceManager *service.ServiceManager) {
 	queue := ConsumerQueue{
 		QueueName: "object_create_queue",
 		Exchange:  "federation",
 		RoutingKeys: map[string]worker.Worker{
-			PostRoutingKey: &worker.PostWorker{
-				Logger:  q.logger,
-				Service: services["posts"].(posts.PostService),
-			},
-			CommentRoutingKey: &worker.CommentWorker{
-				Logger:  q.logger,
-				Service: services["comments"].(comments.CommentService),
-			},
+			PostRoutingKey: worker.NewPostWorker(
+				q.logger,
+				serviceManager.GetPostService(),
+			),
+			CommentRoutingKey: worker.NewCommentWorker(
+				q.logger,
+				serviceManager.GetCommentService(),
+			),
 		},
 	}
 

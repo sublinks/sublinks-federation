@@ -10,7 +10,16 @@ import (
 
 type ActorWorker struct {
 	log.Logger
-	Service actors.ActorService
+	userService      *actors.UserService
+	communityService *actors.CommunityService
+}
+
+func NewActorWorker(logger log.Logger, userService *actors.UserService, communityService *actors.CommunityService) *ActorWorker {
+	return &ActorWorker{
+		Logger:           logger,
+		userService:      userService,
+		communityService: communityService,
+	}
 }
 
 func (w *ActorWorker) Process(msg []byte) error {
@@ -20,9 +29,14 @@ func (w *ActorWorker) Process(msg []byte) error {
 		w.Logger.Error("Error unmarshalling actor", err)
 		return err
 	}
-	if !w.Service.Save(&actor) {
-		w.Logger.Error("Error saving actor", nil)
-		return errors.New("Error saving actor")
+	if actor.ActorType == "Group" && !w.communityService.Save(&actor) {
+		w.Logger.Error("Error saving actor (community)", nil)
+		return errors.New("Error saving actor (community)")
+	}
+
+	if actor.ActorType == "Person" && !w.userService.Save(&actor) {
+		w.Logger.Error("Error saving actor (user)", nil)
+		return errors.New("Error saving actor (user)")
 	}
 	return nil
 }

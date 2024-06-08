@@ -11,7 +11,14 @@ import (
 
 type PostWorker struct {
 	log.Logger
-	Service posts.PostService
+	service *posts.PostService
+}
+
+func NewPostWorker(logger log.Logger, service *posts.PostService) *PostWorker {
+	return &PostWorker{
+		Logger:  logger,
+		service: service,
+	}
 }
 
 func (w *PostWorker) Process(msg []byte) error {
@@ -23,7 +30,7 @@ func (w *PostWorker) Process(msg []byte) error {
 		w.Logger.Error("Error unmarshalling post: %s", err)
 		return err
 	}
-	res := w.Service.Save(&post)
+	res := w.service.Save(&post)
 	if !res {
 		w.Logger.Error("Error saving post", nil)
 		return err

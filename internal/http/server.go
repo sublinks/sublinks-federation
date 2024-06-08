@@ -20,25 +20,25 @@ type Server struct {
 	log.Logger
 	db.Database
 	queue.Queue
-	Services map[string]service.Service
+	ServiceManager *service.ServiceManager
 }
 
 type ServerConfig struct {
 	log.Logger
 	db.Database
 	queue.Queue
-	Services map[string]service.Service
+	ServiceManager *service.ServiceManager
 }
 
 func NewServer(config ServerConfig) *Server {
 	r := mux.NewRouter()
 
 	return &Server{
-		Router:   r,
-		Logger:   config.Logger,
-		Database: config.Database,
-		Queue:    config.Queue,
-		Services: config.Services,
+		Router:         r,
+		Logger:         config.Logger,
+		Database:       config.Database,
+		Queue:          config.Queue,
+		ServiceManager: config.ServiceManager,
 	}
 }
 

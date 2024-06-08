@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"sublinks/sublinks-federation/internal/activitypub"
-	"sublinks/sublinks-federation/internal/service/actors"
 
 	"github.com/gorilla/mux"
 )
@@ -17,7 +16,7 @@ func (server *Server) SetupUserRoutes() {
 func (server *Server) getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	server.Logger.Info(fmt.Sprintf("Looking up user %s", vars["user"]))
-	user := server.Services["actors"].(actors.ActorService).FindUser(vars["user"])
+	user := server.ServiceManager.GetUserService().GetById(vars["user"])
 	if user == nil {
 		server.Logger.Error("User not found", nil)
 		w.WriteHeader(http.StatusNotFound)

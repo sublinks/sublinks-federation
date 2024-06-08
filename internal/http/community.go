@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"sublinks/sublinks-federation/internal/activitypub"
-	"sublinks/sublinks-federation/internal/service/actors"
 
 	"github.com/gorilla/mux"
 )
@@ -17,7 +16,7 @@ func (server *Server) SetupCommunityRoutes() {
 func (server *Server) getCommunityInfoHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	server.Logger.Info(fmt.Sprintf("Looking up community %s", vars["community"]))
-	community := server.Services["actors"].(actors.ActorService).FindCommunity(vars["community"])
+	community := server.ServiceManager.GetCommunityService().GetById(vars["community"])
 	if community == nil {
 		server.Logger.Error("Community not found", nil)
 		w.WriteHeader(http.StatusNotFound)

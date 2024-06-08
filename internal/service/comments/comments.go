@@ -13,7 +13,7 @@ func NewCommentService(db db.Database) *CommentService {
 	return &CommentService{db}
 }
 
-func (p CommentService) FindComment(id string) *model.Comment {
+func (p CommentService) GetById(id string) interface{} {
 	comment := &model.Comment{}
 	err := p.db.Find(comment, id)
 	if err != nil {
@@ -22,7 +22,7 @@ func (p CommentService) FindComment(id string) *model.Comment {
 	return nil
 }
 
-func (p *CommentService) Save(comment *model.Comment) bool {
+func (p CommentService) Save(comment interface{}) bool {
 	err := p.db.Save(comment)
 	return err == nil
 }

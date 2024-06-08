@@ -37,16 +37,17 @@ func main() {
 		logger.Fatal("failed connecting to queue service", err)
 	}
 	defer q.Close()
-	services := map[string]service.Service{
-		"actors":   *actors.NewActorService(conn),
-		"posts":    *posts.NewPostService(conn),
-		"comments": *comments.NewCommentService(conn),
-	}
-	q.Run(services)
+	serviceManager := service.NewServiceManager(
+		actors.NewUserService(conn),
+		actors.NewCommunityService(conn),
+		posts.NewPostService(conn),
+		comments.NewCommentService(conn),
+	)
+	q.Run(serviceManager)
 	config := http.ServerConfig{
-		Logger:   logger,
-		Queue:    q,
-		Services: services,
+		Logger:         logger,
+		Queue:          q,
+		ServiceManager: serviceManager,
 	}
 	s := http.NewServer(config)
 	s.RunServer()
