@@ -9,6 +9,7 @@ import (
 	"sublinks/sublinks-federation/internal/db"
 	"sublinks/sublinks-federation/internal/log"
 	"sublinks/sublinks-federation/internal/queue"
+	"sublinks/sublinks-federation/internal/service"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -19,22 +20,25 @@ type Server struct {
 	log.Logger
 	db.Database
 	queue.Queue
+	ServiceManager *service.ServiceManager
 }
 
 type ServerConfig struct {
 	log.Logger
 	db.Database
 	queue.Queue
+	ServiceManager *service.ServiceManager
 }
 
 func NewServer(config ServerConfig) *Server {
 	r := mux.NewRouter()
 
 	return &Server{
-		Router:   r,
-		Logger:   config.Logger,
-		Database: config.Database,
-		Queue:    config.Queue,
+		Router:         r,
+		Logger:         config.Logger,
+		Database:       config.Database,
+		Queue:          config.Queue,
+		ServiceManager: config.ServiceManager,
 	}
 }
 

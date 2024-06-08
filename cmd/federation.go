@@ -6,6 +6,7 @@ import (
 	"sublinks/sublinks-federation/internal/http"
 	"sublinks/sublinks-federation/internal/log"
 	"sublinks/sublinks-federation/internal/queue"
+	"sublinks/sublinks-federation/internal/service"
 
 	"github.com/joho/godotenv"
 )
@@ -33,11 +34,17 @@ func main() {
 		logger.Fatal("failed connecting to queue service", err)
 	}
 	defer q.Close()
-	q.Run(conn)
+	serviceManager := service.NewServiceManager(
+		service.NewUserService(conn),
+		service.NewCommunityService(conn),
+		service.NewPostService(conn),
+		service.NewCommentService(conn),
+	)
+	q.Run(serviceManager)
 	config := http.ServerConfig{
-		Logger:   logger,
-		Database: conn,
-		Queue:    q,
+		Logger:         logger,
+		Queue:          q,
+		ServiceManager: serviceManager,
 	}
 	s := http.NewServer(config)
 	s.RunServer()

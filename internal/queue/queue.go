@@ -2,17 +2,16 @@ package queue
 
 import (
 	"os"
-	"sublinks/sublinks-federation/internal/repository"
+	"sublinks/sublinks-federation/internal/log"
+	"sublinks/sublinks-federation/internal/service"
 	"sublinks/sublinks-federation/internal/worker"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	"sublinks/sublinks-federation/internal/db"
-	"sublinks/sublinks-federation/internal/log"
 )
 
 type Queue interface {
 	Connect() error
-	Run(conn db.Database)
+	Run(serviceManager *service.ServiceManager)
 	PublishMessage(queueName string, message string) error
 	StartConsumer(queueData ConsumerQueue) error
 	Status() map[string]map[string]bool
@@ -49,20 +48,21 @@ func (q *RabbitQueue) Status() map[string]map[string]bool {
 	return status
 }
 
-func (q *RabbitQueue) Run(conn db.Database) {
-	q.processActors(conn)
-	q.processObjects(conn)
+func (q *RabbitQueue) Run(serviceManager *service.ServiceManager) {
+	q.processActors(serviceManager)
+	q.processObjects(serviceManager)
 }
 
-func (q *RabbitQueue) processActors(conn db.Database) {
+func (q *RabbitQueue) processActors(serviceManager *service.ServiceManager) {
 	actorCQ := ConsumerQueue{
 		QueueName: "actor_create_queue",
 		Exchange:  "federation",
 		RoutingKeys: map[string]worker.Worker{
-			ActorRoutingKey: &worker.ActorWorker{
-				Logger:     q.logger,
-				Repository: repository.NewRepository(conn),
-			},
+			ActorRoutingKey: worker.NewActorWorker(
+				q.logger,
+				serviceManager.UserService(),
+				serviceManager.CommunityService(),
+			),
 		},
 	}
 
@@ -72,19 +72,19 @@ func (q *RabbitQueue) processActors(conn db.Database) {
 	}
 }
 
-func (q *RabbitQueue) processObjects(conn db.Database) {
+func (q *RabbitQueue) processObjects(serviceManager *service.ServiceManager) {
 	queue := ConsumerQueue{
 		QueueName: "object_create_queue",
 		Exchange:  "federation",
 		RoutingKeys: map[string]worker.Worker{
-			PostRoutingKey: &worker.PostWorker{
-				Logger:     q.logger,
-				Repository: repository.NewRepository(conn),
-			},
-			CommentRoutingKey: &worker.CommentWorker{
-				Logger:     q.logger,
-				Repository: repository.NewRepository(conn),
-			},
+			PostRoutingKey: worker.NewPostWorker(
+				q.logger,
+				serviceManager.PostService(),
+			),
+			CommentRoutingKey: worker.NewCommentWorker(
+				q.logger,
+				serviceManager.CommentService(),
+			),
 		},
 	}
 
