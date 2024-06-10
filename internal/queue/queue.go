@@ -1,19 +1,21 @@
 package queue
 
 import (
+	"context"
 	"os"
 	"sublinks/sublinks-federation/internal/log"
 	"sublinks/sublinks-federation/internal/service"
 	"sublinks/sublinks-federation/internal/worker"
+	"sync"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type Queue interface {
 	Connect() error
-	Run(serviceManager *service.ServiceManager)
+	Run(serviceManager *service.ServiceManager, ctx context.Context, wg *sync.WaitGroup)
 	PublishMessage(queueName string, message string) error
-	StartConsumer(queueData ConsumerQueue) error
+	StartConsumer(queueData ConsumerQueue, ctx context.Context) error
 	Status() map[string]map[string]bool
 	Close()
 }
@@ -48,12 +50,23 @@ func (q *RabbitQueue) Status() map[string]map[string]bool {
 	return status
 }
 
-func (q *RabbitQueue) Run(serviceManager *service.ServiceManager) {
-	q.processActors(serviceManager)
-	q.processObjects(serviceManager)
+func (q *RabbitQueue) Run(serviceManager *service.ServiceManager, ctx context.Context, wg *sync.WaitGroup) {
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		q.logger.Info("starting actor consumer")
+		q.processActors(serviceManager, ctx)
+	}()
+
+	go func() {
+		defer wg.Done()
+		q.logger.Info("starting object consumer")
+		q.processObjects(serviceManager, ctx)
+	}()
 }
 
-func (q *RabbitQueue) processActors(serviceManager *service.ServiceManager) {
+func (q *RabbitQueue) processActors(serviceManager *service.ServiceManager, ctx context.Context) {
 	actorCQ := ConsumerQueue{
 		QueueName: "actor_create_queue",
 		Exchange:  "federation",
@@ -66,13 +79,22 @@ func (q *RabbitQueue) processActors(serviceManager *service.ServiceManager) {
 		},
 	}
 
-	err := q.StartConsumer(actorCQ)
-	if err != nil {
-		q.logger.Fatal("failed starting actor consumer", err)
+	for {
+		select {
+		case <-ctx.Done():
+			q.logger.Warn("actor context canceled")
+			return
+		default:
+			err := q.StartConsumer(actorCQ, ctx)
+			if err != nil {
+				q.logger.Fatal("failed starting actor consumer", err)
+				return
+			}
+		}
 	}
 }
 
-func (q *RabbitQueue) processObjects(serviceManager *service.ServiceManager) {
+func (q *RabbitQueue) processObjects(serviceManager *service.ServiceManager, ctx context.Context) {
 	queue := ConsumerQueue{
 		QueueName: "object_create_queue",
 		Exchange:  "federation",
@@ -88,9 +110,17 @@ func (q *RabbitQueue) processObjects(serviceManager *service.ServiceManager) {
 		},
 	}
 
-	err := q.StartConsumer(queue)
-	if err != nil {
-		q.logger.Fatal("failed starting object consumer", err)
+	for {
+		select {
+		case <-ctx.Done():
+			q.logger.Warn("object context canceled")
+			return
+		default:
+			err := q.StartConsumer(queue, ctx)
+			if err != nil {
+				q.logger.Fatal("failed starting object consumer", err)
+			}
+		}
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 )
 
 func (server *Server) SetupPostRoutes() {
+	server.Logger.Info("Setting up post routes")
 	server.Router.HandleFunc("/post/{postId}", server.getPostHandler).Methods("GET")
 }
 
