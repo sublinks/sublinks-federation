@@ -1,6 +1,8 @@
 package queue
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"sublinks/sublinks-federation/internal/worker"
 
@@ -52,7 +54,7 @@ func (q *RabbitQueue) createConsumer(queueData ConsumerQueue) error {
 	return nil
 }
 
-func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue) error {
+func (q *RabbitQueue) StartConsumer(ctx context.Context, queueData ConsumerQueue) error {
 	err := q.createConsumer(queueData)
 	if err != nil {
 		return err
@@ -62,35 +64,40 @@ func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue) error {
 		return fmt.Errorf("consumer not found")
 	}
 
-	errGroup := new(errgroup.Group)
-	for message := range messages {
-		errGroup.Go(func() error {
-			cbWorker, ok := queueData.RoutingKeys[message.RoutingKey]
+	errGroup, ctx := errgroup.WithContext(ctx)
+	for {
+		select {
+		case <-ctx.Done():
+			q.logger.Debug("consumer context canceled")
+			return errGroup.Wait()
+		case message, ok := <-messages:
 			if !ok {
-				return fmt.Errorf("%s not implemented as valid routing key", message.RoutingKey)
+				q.logger.Error("consumer channel closed", errors.New("consumer channel closed"))
+				return errGroup.Wait()
 			}
-
-			err := cbWorker.Process(message.Body)
-
-			if err != nil {
-				err = message.Acknowledger.Nack(message.DeliveryTag, false, true)
-				if err != nil {
-					return fmt.Errorf("error nack'ing the message: %s", err.Error())
+			msg := message
+			errGroup.Go(func() error {
+				cbWorker, ok := queueData.RoutingKeys[msg.RoutingKey]
+				q.logger.Info(fmt.Sprintf("consumer got message from routing key: %s", msg.RoutingKey))
+				if !ok {
+					return fmt.Errorf("%s not implemented as valid routing key", msg.RoutingKey)
 				}
-				return fmt.Errorf("error processing message body: %s", err.Error())
-			}
 
-			err = message.Acknowledger.Ack(message.DeliveryTag, false)
-			if err != nil {
-				return fmt.Errorf("error ack'ing the message: %s", err.Error())
-			}
-			return nil
-		})
+				err := cbWorker.Process(msg.Body)
+				if err != nil {
+					nackErr := msg.Acknowledger.Nack(msg.DeliveryTag, false, true)
+					if nackErr != nil {
+						return fmt.Errorf("error nack'ing the message: %s", nackErr.Error())
+					}
+					return fmt.Errorf("error processing message body: %s", err.Error())
+				}
+
+				ackErr := msg.Acknowledger.Ack(msg.DeliveryTag, false)
+				if ackErr != nil {
+					return fmt.Errorf("error ack'ing the message: %s", ackErr.Error())
+				}
+				return nil
+			})
+		}
 	}
-
-	if err := errGroup.Wait(); err != nil {
-		return err
-	}
-
-	return nil
 }

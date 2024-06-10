@@ -7,6 +7,7 @@ import (
 )
 
 func (server *Server) SetupApubRoutes() {
+	server.Logger.Debug("Setting up Apub routes")
 	server.Router.HandleFunc("/{type}/{id}/inbox", server.getInboxHandler).Methods("GET")
 	server.Router.HandleFunc("/{type}/{id}/inbox", server.postInboxHandler).Methods("POST")
 	server.Router.HandleFunc("/{type}/{id}/outbox", server.getOutboxHandler).Methods("GET")

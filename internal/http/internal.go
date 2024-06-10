@@ -14,6 +14,7 @@ type Health struct {
 }
 
 func (server *Server) SetupInternalRoutes() {
+	server.Logger.Debug("Setting up internal routes")
 	server.Router.HandleFunc("/internal/health", server.getHealthHandler).Methods("GET")
 
 	// Keeping this for the moment to not break existing health check

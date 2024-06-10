@@ -10,6 +10,7 @@ import (
 )
 
 func (server *Server) SetupCommunityRoutes() {
+	server.Logger.Debug("Setting up community routes")
 	server.Router.HandleFunc("/c/{community}", server.getCommunityInfoHandler).Methods("GET")
 }
 
