@@ -2,8 +2,8 @@ package queue
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"github.com/pkg/errors"
 	"sublinks/sublinks-federation/internal/worker"
 
 	"golang.org/x/sync/errgroup"
@@ -54,7 +54,7 @@ func (q *RabbitQueue) createConsumer(queueData ConsumerQueue) error {
 	return nil
 }
 
-func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue, ctx context.Context) error {
+func (q *RabbitQueue) StartConsumer(ctx context.Context, queueData ConsumerQueue) error {
 	err := q.createConsumer(queueData)
 	if err != nil {
 		return err

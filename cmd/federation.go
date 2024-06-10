@@ -56,7 +56,7 @@ func main() {
 		service.NewCommentService(conn),
 	)
 
-	q.Run(serviceManager, ctx, wg)
+	q.Run(ctx, serviceManager, wg)
 
 	config := http.ServerConfig{
 		Logger:         logger,
