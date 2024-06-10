@@ -82,7 +82,7 @@ func (q *RabbitQueue) processActors(serviceManager *service.ServiceManager, ctx 
 	for {
 		select {
 		case <-ctx.Done():
-			q.logger.Warn("actor context canceled")
+			q.logger.Debug("actor context canceled")
 			return
 		default:
 			err := q.StartConsumer(actorCQ, ctx)
@@ -113,7 +113,7 @@ func (q *RabbitQueue) processObjects(serviceManager *service.ServiceManager, ctx
 	for {
 		select {
 		case <-ctx.Done():
-			q.logger.Warn("object context canceled")
+			q.logger.Debug("object context canceled")
 			return
 		default:
 			err := q.StartConsumer(queue, ctx)

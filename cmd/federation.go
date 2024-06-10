@@ -72,7 +72,7 @@ func main() {
 	signal.Notify(signalTermChan, os.Interrupt)
 	<-signalTermChan
 
-	logger.Info("shutting down gracefully")
+	logger.Debug("shutting down gracefully")
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), wait)
 	defer shutdownCancel()
 

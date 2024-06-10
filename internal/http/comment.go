@@ -11,6 +11,7 @@ import (
 )
 
 func (server *Server) SetupCommentRoutes() {
+	server.Logger.Debug("Setting up comment routes")
 	server.Router.HandleFunc("/comment/{commentId}", server.getCommentHandler).Methods("GET")
 }
 

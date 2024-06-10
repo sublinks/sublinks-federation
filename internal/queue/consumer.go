@@ -3,6 +3,7 @@ package queue
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 	"sublinks/sublinks-federation/internal/worker"
 
 	"golang.org/x/sync/errgroup"
@@ -67,16 +68,17 @@ func (q *RabbitQueue) StartConsumer(queueData ConsumerQueue, ctx context.Context
 	for {
 		select {
 		case <-ctx.Done():
-			q.logger.Warn("consumer context canceled")
+			q.logger.Debug("consumer context canceled")
 			return errGroup.Wait()
 		case message, ok := <-messages:
 			if !ok {
-				q.logger.Warn("consumer channel closed")
+				q.logger.Error("consumer channel closed", errors.New("consumer channel closed"))
 				return errGroup.Wait()
 			}
 			msg := message
 			errGroup.Go(func() error {
 				cbWorker, ok := queueData.RoutingKeys[msg.RoutingKey]
+				q.logger.Info(fmt.Sprintf("consumer got message from routing key: %s", msg.RoutingKey))
 				if !ok {
 					return fmt.Errorf("%s not implemented as valid routing key", msg.RoutingKey)
 				}

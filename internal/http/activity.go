@@ -13,7 +13,7 @@ import (
 )
 
 func (server *Server) SetupActivityRoutes() {
-	server.Logger.Info("Setting up activity routes")
+	server.Logger.Debug("Setting up activity routes")
 	server.Router.HandleFunc("/activities/{action}/{id}", server.getActivityHandler).Methods("GET")
 }
 

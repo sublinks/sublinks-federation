@@ -10,7 +10,7 @@ import (
 )
 
 func (server *Server) SetupUserRoutes() {
-	server.Logger.Info("Setting up user routes")
+	server.Logger.Debug("Setting up user routes")
 	server.Router.HandleFunc("/u/{user}", server.getUserInfoHandler).Methods("GET")
 }
 
