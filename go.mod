@@ -8,8 +8,8 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/rs/zerolog v1.33.0
-	golang.org/x/sync v0.5.0
-	golang.org/x/text v0.15.0
+	golang.org/x/sync v0.7.0
+	golang.org/x/text v0.16.0
 	gorm.io/driver/mysql v1.5.6
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gorm v1.25.10
