@@ -34,7 +34,9 @@ func (logger *Log) Info(msg string) {
 }
 
 func (logger *Log) Debug(msg string) {
-	logger.Logger.Debug().Msg(msg)
+	if os.Getenv("LOG_LEVEL") == "debug" {
+		logger.Logger.Debug().Msg(msg)
+	}
 }
 
 func (logger *Log) Error(msg string, err error) {
