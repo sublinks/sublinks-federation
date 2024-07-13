@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/rs/zerolog"
 )
@@ -27,6 +28,23 @@ func NewLogger(name string) *Log {
 	logger := zerolog.New(os.Stdout)
 	logger.Debug().Msg(fmt.Sprintf("%s logger started", name))
 	return &Log{&logger}
+}
+
+func SetGlobalLevel(level string) {
+	switch strings.ToLower(level) {
+	case "disabled":
+		zerolog.SetGlobalLevel(zerolog.Disabled)
+	case "error":
+		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+	case "warning":
+		zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	case "info":
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	case "debug":
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	default:
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	}
 }
 
 func (logger *Log) Info(msg string) {

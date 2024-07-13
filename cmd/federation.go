@@ -27,6 +27,11 @@ func main() {
 	wg := &sync.WaitGroup{}
 
 	// bootstrap logger
+	logLevel, ok := os.LookupEnv("LOG_LEVEL")
+	if !ok {
+		logLevel = "info"
+	}
+	log.SetGlobalLevel(logLevel)
 	logger := log.NewLogger("main")
 
 	// Load connection string from .env file
